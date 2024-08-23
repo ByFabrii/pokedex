@@ -3,10 +3,6 @@ import { Loader } from '../Components';
 import { PokemonContext } from '../Context/PokemonContext';
 import { primerMayuscula } from '../Helper/Helper';
 
-
-import Box from '@mui/material/Box';
-import Slider from '@mui/material/Slider';
-
 export const PokemonPage = ({ idPokemon }) => {
 
 	const { getPokemonByID } = useContext(PokemonContext);
