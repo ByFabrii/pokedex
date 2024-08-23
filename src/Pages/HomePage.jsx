@@ -1,12 +1,18 @@
 import React, { useContext, useState, useEffect } from 'react';
-import { FilterBar, PokemonList } from '../Components';
+import { FilterBar, Loader, PokemonList } from '../Components';
 import { PokemonContext } from '../Context/PokemonContext';
 import { Fab } from '@mui/material';
 import { KeyboardArrowUp } from '@mui/icons-material';
 
 export const HomePage = () => {
-    const { onClickLoadMore, active, setActive } = useContext(PokemonContext);
+    const { onClickLoadMore, active, setActive, setOffset } = useContext(PokemonContext);  // Asegúrate de incluir `setOffset`
     const [showScroll, setShowScroll] = useState(false);
+
+    const handleScroll = () => {
+        if (window.innerHeight + document.documentElement.scrollTop >= document.documentElement.offsetHeight) {
+            setOffset(prevOffset => prevOffset + 50);  // Incrementa el offset
+        }
+    };
 
     const checkScrollTop = () => {
         if (!showScroll && window.pageYOffset > 400) {
@@ -22,8 +28,11 @@ export const HomePage = () => {
 
     useEffect(() => {
         window.addEventListener('scroll', checkScrollTop);
+        window.addEventListener('scroll', handleScroll);  // Agrega el listener para el scroll
+
         return () => {
             window.removeEventListener('scroll', checkScrollTop);
+            window.removeEventListener('scroll', handleScroll);  // Remueve el listener al desmontar
         };
     }, [showScroll]);
 
@@ -50,11 +59,7 @@ export const HomePage = () => {
             </div>
             <PokemonList />
             <FilterBar />
-            <div className="container-btn-load-more container">
-                <button className='btn-load-more' onClick={onClickLoadMore}>
-                    Cargar más
-                </button>
-            </div>
+            <Loader/>
             {showScroll && (
                 <Fab
                     color='warning'

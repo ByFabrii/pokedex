@@ -1,169 +1,170 @@
-import { useEffect, useState } from "react"
-import { PokemonContext } from "./PokemonContext"
+import { useEffect, useState } from "react";
+import { PokemonContext } from "./PokemonContext";
 import { useForm } from "../Hooks/useForm";
 
 export const PokemonProvider = ({ children }) => {
-	const [allPokemons, setAllPokemons] = useState([]);
-	const [globalPokemons, setGlobalPokemons] = useState([]);
-	const [offset, setOffset] = useState(0);
-	const [type, setType] = useState([])
+    const [allPokemons, setAllPokemons] = useState([]);
+    const [globalPokemons, setGlobalPokemons] = useState([]);
+    const [offset, setOffset] = useState(0);
+    const [type, setType] = useState([]);
 
-	// Utilizar CustomHook - useForm
-	const { valueSearch, onInputChange, onResetForm } = useForm({
-		valueSearch: '',
-	});
+    const { valueSearch, onInputChange, onResetForm } = useForm({
+        valueSearch: '',
+    });
 
-	// Estados para la aplicación simples
-	const [loading, setLoading] = useState(true);
-	const [active, setActive] = useState(false);
+    const [loading, setLoading] = useState(true);
+    const [loadingMore, setLoadingMore] = useState(false);
+    const [active, setActive] = useState(false);
 
-	// lLamar 50 pokemones a la API
-	const getAllPokemons = async (limit = 50) => {
-		const baseURL = 'https://pokeapi.co/api/v2/';
+    const getAllPokemons = async (limit = 20) => {
+        setLoadingMore(true);
+        const baseURL = 'https://pokeapi.co/api/v2/';
+        const res = await fetch(`${baseURL}pokemon?limit=${limit}&offset=${offset}`);
+        const data = await res.json();
 
-		const res = await fetch(
-			`${baseURL}pokemon?limit=${limit}&offset=${offset}`
-		);
-		const data = await res.json();
+        const promises = data.results.map(async pokemon => {
+            const res = await fetch(pokemon.url);
+            const data = await res.json();
+            return data;
+        });
+        const results = await Promise.all(promises);
 
-		const promises = data.results.map(async pokemon => {
-			const res = await fetch(pokemon.url);
-			const data = await res.json();
-			return data;
-		});
-		const results = await Promise.all(promises);
+        setAllPokemons(prevPokemons => [...prevPokemons, ...results]);
+        setLoadingMore(false);
+        setLoading(false);
+    };
 
-		setAllPokemons([...allPokemons, ...results]);
-		setLoading(false);
-	};
+	// const getGlobalPokemons = async (limit = 151) => {
+    //     const baseURL = 'https://pokeapi.co/api/v2/';
+    //     setLoading(true);
 
-	// Llamar todos los pokemones KANTO (PRIMEROS 151)
-	const getGlobalPokemons = async () => {
-		const baseURL = 'https://pokeapi.co/api/v2/';
+    //     const res = await fetch(`${baseURL}pokemon?limit=${limit}&offset=0`);
+    //     const data = await res.json();
 
-		const res = await fetch(
-			`${baseURL}pokemon?limit=1025&offset=0`
-		);
-		const data = await res.json();
+    //     const promises = data.results.map(async pokemon => {
+    //         const res = await fetch(pokemon.url);
+    //         const data = await res.json();
+    //         return data;
+    //     });
+    //     const results = await Promise.all(promises);
 
-		const promises = data.results.map(async pokemon => {
-			const res = await fetch(pokemon.url);
-			const data = await res.json();
-			return data;
-		});
-		const results = await Promise.all(promises);
-
-		setGlobalPokemons(results);
-		setLoading(false);
-	};
-
-	// Llamar a un pokemon por ID
+    //     setGlobalPokemons(results);
+    //     setLoading(false);
+    // };
+	
 	const getPokemonByID = async id => {
-		const baseURL = 'https://pokeapi.co/api/v2/';
+        const baseURL = 'https://pokeapi.co/api/v2/';
+        const res = await fetch(`${baseURL}pokemon/${id}`);
+        const data = await res.json();
+        return data;
+    };
+	
+    const searchPokemonByName = async (name) => {
+        setLoading(true);
+        try {
+            const baseURL = 'https://pokeapi.co/api/v2/pokemon/';
+            const res = await fetch(`${baseURL}${name.toLowerCase()}`);
+            if (!res.ok) throw new Error('Pokemon not found');
+            const data = await res.json();
+            setGlobalPokemons([data]);  // Almacena solo el Pokémon encontrado
+        } catch (error) {
+            console.error(error.message);
+            setGlobalPokemons([]);  // Limpia la lista si no se encuentra el Pokémon
+        }
+        setLoading(false);
+    };
 
-		const res = await fetch(`${baseURL}pokemon/${id}`);
-		const data = await res.json();
-		return data;
-	};
+    const getTypes = async () => {
+        const baseURL = 'https://pokeapi.co/api/v2/';
+        const res = await fetch(`${baseURL}type`);
+        const data = await res.json();
+        setType(data.results);
+    };
 
-	const getTypes = async () => {
-		const baseURL = 'https://pokeapi.co/api/v2/';
-		
-		const res = await fetch(`${baseURL}type`);
-		const data = await res.json();
-		setType(data.results);
-	};
+    useEffect(() => {
+        getTypes();
+    }, []);
 
-	useEffect(() => {
-		getTypes();
-	}, [])
+    useEffect(() => {
+        getAllPokemons();
+    }, [offset]);
 
-	useEffect(() => {
-		getAllPokemons();
-	}, [offset]);
+    const onClickLoadMore = () => {
+        setOffset(prevOffset => prevOffset + 20);
+    };
 
-	useEffect(() => {
-		getGlobalPokemons();
-	}, []);
+    const [typeSelected, setTypeSelected] = useState({
+        grass: false,
+        normal: false,
+        fighting: false,
+        flying: false,
+        poison: false,
+        ground: false,
+        rock: false,
+        bug: false,
+        ghost: false,
+        steel: false,
+        fire: false,
+        water: false,
+        electric: false,
+        psychic: false,
+        ice: false,
+        dragon: false,
+        dark: false,
+        fairy: false,
+        unknow: false,
+        shadow: false,
+    });
 
-	// BTN CARGAR MÁS
-	const onClickLoadMore = () => {
-		setOffset(offset + 50);
-	};
+    const [filteredPokemons, setfilteredPokemons] = useState([]);
 
-	// Filter Function + State
-	const [typeSelected, setTypeSelected] = useState({
-		grass: false,
-		normal: false,
-		fighting: false,
-		flying: false,
-		poison: false,
-		ground: false,
-		rock: false,
-		bug: false,
-		ghost: false,
-		steel: false,
-		fire: false,
-		water: false,
-		electric: false,
-		psychic: false,
-		ice: false,
-		dragon: false,
-		dark: false,
-		fairy: false,
-		unknow: false,
-		shadow: false,
-	});
+    const handleCheckbox = e => {
+        setTypeSelected({
+            ...typeSelected,
+            [e.target.name]: e.target.checked,
+        });
 
-	const [filteredPokemons, setfilteredPokemons] = useState([]);
+        if (e.target.checked) {
+            const filteredResults = globalPokemons.filter(pokemon =>
+                pokemon.types
+                    .map(type => type.type.name)
+                    .includes(e.target.name)
+            );
+            setfilteredPokemons([...filteredPokemons, ...filteredResults]);
+        } else {
+            const filteredResults = filteredPokemons.filter(
+                pokemon =>
+                    !pokemon.types
+                        .map(type => type.type.name)
+                        .includes(e.target.name)
+            );
+            setfilteredPokemons([...filteredResults]);
+        }
+    };
 
-	const handleCheckbox = e => {
-		setTypeSelected({
-			...typeSelected,
-			[e.target.name]: e.target.checked,
-		});
-
-		if (e.target.checked) {
-			const filteredResults = globalPokemons.filter(pokemon =>
-				pokemon.types
-					.map(type => type.type.name)
-					.includes(e.target.name)
-			);
-			setfilteredPokemons([...filteredPokemons, ...filteredResults]);
-		} else {
-			const filteredResults = filteredPokemons.filter(
-				pokemon =>
-					!pokemon.types
-						.map(type => type.type.name)
-						.includes(e.target.name)
-			);
-			setfilteredPokemons([...filteredResults]);
-		}
-	};
-
-	return (
-		<PokemonContext.Provider
-			value={{
-				valueSearch,
-				onInputChange,
-				onResetForm,
-				allPokemons,
-				globalPokemons,
-				getPokemonByID,
-				onClickLoadMore,
-				// Loader
-				loading,
-				setLoading,
-				// Btn Filter
-				active,
-				setActive,
-				// Filter Container Checkbox
-				handleCheckbox,
-				filteredPokemons,
-				type,
-			}}
-		>
-			{children}
-		</PokemonContext.Provider>
-	);
+    return (
+        <PokemonContext.Provider
+            value={{
+                valueSearch,
+                onInputChange,
+                onResetForm,
+                allPokemons,
+                globalPokemons,
+                searchPokemonByName,
+                getPokemonByID,
+                onClickLoadMore,
+                loading,
+                setLoading,
+                active,
+                setActive,
+                handleCheckbox,
+                filteredPokemons,
+                type,
+                loadingMore,
+                setOffset,
+            }}
+        >
+            {children}
+        </PokemonContext.Provider>
+    );
 };
