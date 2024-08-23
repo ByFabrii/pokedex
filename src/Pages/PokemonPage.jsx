@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { Loader } from '../components';
+import { Loader } from '../Components';
 import { PokemonContext } from '../Context/PokemonContext';
 import { primerMayuscula } from '../helper/helper';
 
