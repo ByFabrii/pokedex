@@ -13,7 +13,7 @@ import Modal from '@mui/material/Modal';
 import Fade from '@mui/material/Fade';
 import Button from '@mui/material/Button';
 
-import { primerMayuscula } from '../Helper/Helper';
+import { primerMayuscula } from '../Helper/Helper.js';
 
 
 import { PokemonPage } from '../Pages/PokemonPage';
