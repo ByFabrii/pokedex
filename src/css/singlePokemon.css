@@ -159,14 +159,17 @@
 
 	.box{
 		position: absolute;
-		top: 25%;
-		left: 25%;
+		display: flex;
+		justify-content: center;
+		top: 40%;
+		left: 28%;
 		transform: translate(-25%, -25%);
 		width: 325px;
 		height: 325px;
 		border: 1px solid #000;
 		box-shadow: 24px;
 		background-image: url('../assets/fondo.png');
+		background-size: 100%;
 		background-repeat: no-repeat;
 		background-position: center;
 	}
