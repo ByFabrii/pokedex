@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { Loader } from '../Components';
 import { PokemonContext } from '../Context/PokemonContext';
-import { primerMayuscula } from '../Helper/Helper.js';
+import { primerMayuscula } from '.././Helper/Helper';
 
 export const PokemonPage = ({ idPokemon }) => {
 
