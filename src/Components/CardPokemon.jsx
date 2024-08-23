@@ -1,0 +1,104 @@
+import * as React from 'react';
+import Card from '@mui/material/Card';
+import CardContent from '@mui/material/CardContent';
+import CardMedia from '@mui/material/CardMedia';
+import Typography from '@mui/material/Typography';
+import { CardActionArea } from '@mui/material';
+
+import fondoIMG from '../assets/fondo.png';
+
+import Backdrop from '@mui/material/Backdrop';
+import Box from '@mui/material/Box';
+import Modal from '@mui/material/Modal';
+import Fade from '@mui/material/Fade';
+import Button from '@mui/material/Button';
+
+import { primerMayuscula } from '../helper/helper';
+
+
+import { PokemonPage } from '../Pages/PokemonPage';
+
+
+
+const style = {
+  position: 'absolute',
+  top: '50%',
+  left: '50%',
+  transform: 'translate(-50%, -50%)',
+  width: 650,
+  height: 650,
+  border: '2px solid #000',
+  boxShadow: 24,
+  p: 4,
+  backgroundImage:`url(${fondoIMG})`,
+  backgroundRepeat:'no-repeat',
+  backgroundPosition: 'center',
+};
+
+export const CardPokemon = ({ pokemon }) => {
+  
+  const [open, setOpen] = React.useState(false);
+  const handleOpenModal = () => {
+    setOpen(true)
+
+  };
+  const handleClose = () => setOpen(false);
+  return (
+    <>
+      {/* <Link to={`/pokemon/${pokemon.id}`}> */}
+
+      <Card sx={{ maxWidth: 345 }}>
+        <CardActionArea onClick={handleOpenModal}>
+          
+            <CardMedia
+              component="img"
+              height="280"
+              image={pokemon.sprites.other.dream_world.front_default}
+              alt={`Pokemon ${pokemon.name}`}
+              className={`card-img ${pokemon.types[0].type.name}`}
+              sx={{backgroundImage:`url(${fondoIMG})`, border:'0px !important'}}
+            />
+          
+          <CardContent>
+            <Typography gutterBottom component="div">
+              <span className='pokemon-id'>N° {pokemon.id}</span>
+              <h3>{primerMayuscula(pokemon.name)}</h3>
+            </Typography>
+            <div className='card-info'>
+              <div className='card-types'>
+                <Typography variant="body2" color="text.secondary">
+                  {pokemon.types.map(type => (
+                    <span key={type.type.name} className={type.type.name}>
+                      {type.type.name}
+                    </span>
+                  ))}
+                </Typography>
+              </div>
+            </div>
+          </CardContent>
+        </CardActionArea>
+      </Card>
+      {/* </Link> */}
+
+      <Modal
+        aria-labelledby="transition-modal-title"
+        aria-describedby="transition-modal-description"
+        open={open}
+        onClose={handleClose}
+        closeAfterTransition
+        slots={{ backdrop: Backdrop }}
+        slotProps={{
+          backdrop: {
+            timeout: 500,
+          },
+        }}
+      >
+        <Fade in={open}>
+          <Box sx={style} className={`box ${pokemon.types[0].type.name}`} >
+            <PokemonPage idPokemon={pokemon.id} />
+          </Box>
+        </Fade>
+      </Modal>
+    </>
+  );
+};
