@@ -9,9 +9,6 @@ export const PokemonList = () => {
 
 	return (
 		<>
-			{loading ? (
-				<Loader />
-			) : (
 				<div className='card-list-pokemon container'>
 					{filteredPokemons.length ? (
 						<>
@@ -27,7 +24,6 @@ export const PokemonList = () => {
 						</>
 					)}
 				</div>
-			)}
 		</>
 	);
 };
