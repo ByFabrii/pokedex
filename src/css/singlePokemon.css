@@ -178,23 +178,23 @@
 		display: flex;
 		align-items: center;
 		position: relative;
-		top: 5px;
+		top: -10px;
 		
 	}
 
 	.number-pokemon {
 		position: absolute;
-		top: 0px;
+		top: 8px;
 		left: 0;
-
-		font-size: 30px;
+		
+		font-size: 27px;
 		font-weight: 700;
 		color: white;
 	}
 
 	.container-img-pokemon {
 		order: 2;
-		padding: 0px 0px 30px 5px;
+		padding: 0px 10px 18px 10px;
 		height: 160px;
 	}
 
@@ -213,6 +213,7 @@
 	.container-info-pokemon h1 {
 		text-align: left;
 		font-size: 30px;
+		top: 10px;
 	}
 
 	.info-pokemon {
