@@ -225,12 +225,13 @@
 	.group-info{
 		display: flex;
 		flex-direction: column;
-		gap: 2px;
+		font-size: 10px;
+		gap: 1px;
 	}
 
 	.group-info p {
 		font-weight: 700;
-		font-size: 15px;
+		font-size: 10px;
 	}
 
 	/* Container para las estadísticas */
