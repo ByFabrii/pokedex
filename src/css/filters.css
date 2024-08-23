@@ -1,0 +1,149 @@
+/* Container Filters */
+
+/* Btn Filter */
+.container-filter {
+	display: flex;
+}
+
+.icon-filter {
+	display: flex;
+	align-items: center;
+	gap: 15px;
+
+	margin-bottom: 20px;
+	cursor: pointer;
+	
+}
+
+.icon-filter .icon {
+	width: 30px;
+	height: 30px;
+	stroke: #555;
+}
+
+.container-filters {
+	display: flex;
+	justify-content: center;
+
+	position: fixed;
+	top: 0;
+	left: -300px;
+	width: 250px;
+
+	color: #ffffff;
+	background-color: var(--color-warning);
+	height: 100%;
+	padding-top: 80px;
+	transition: all 0.3s linear;
+}
+
+.container-filters.active {
+	left: 0;
+}
+
+.filter-by-type {
+	display: flex;
+	flex-direction: column;
+
+	gap: 10px;
+}
+
+.filter-by-type span {
+	font-weight: 700;
+	font-size: 22px;
+}
+
+.group-type {
+	display: flex;
+	gap: 10px;
+
+	margin-left: 15px;
+}
+
+.group-type label {
+	cursor: pointer;
+}
+
+.close-button {
+    position: absolute;
+    top: 40px;
+    right: 25px;
+    background: none;
+    border: none;
+    font-size: 40px;
+    cursor: pointer;
+}
+
+
+@media (max-width: 768px) {
+	/* Container Filters */
+	
+	/* Btn Filter */
+	.container-filter {
+		display: flex;
+	}
+
+	.icon-filter {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+
+		margin-bottom: 10px;
+		cursor: pointer;
+		
+	}
+
+	.icon-filter .icon {
+		width: 20px;
+		height: 20px;
+		stroke: #555;
+	}
+	.container-filters {
+		display: flex;
+		justify-content: center;
+		position: fixed;
+		top: 0;
+		width: 200px;
+		color: #ffffff;
+		background-color: var(--color-warning);
+		height: 100%;
+		padding-top: 60px;
+		transition: all 0.3s linear;
+	}
+
+	.container-filters.active {
+		left: 0;
+	}
+
+	.filter-by-type {
+		display: flex;
+		flex-direction: column;
+		gap: 7px;
+	}
+
+	.filter-by-type span {
+		font-weight: 700;
+		font-size: 25px;
+	}
+
+	.group-type {
+		display: flex;
+		gap: 7px;
+		font-size: 17px;
+		margin-left: 10px;
+	}
+
+	.group-type label {
+		cursor: pointer;
+	}
+
+	.close-button {
+		position: absolute;
+		top: 40px;
+		right: 25px;
+		background: none;
+		border: none;
+		font-size: 20px;
+		cursor: pointer;
+	}
+}

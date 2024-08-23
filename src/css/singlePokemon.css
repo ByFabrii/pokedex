@@ -1,0 +1,306 @@
+.main-pokemon {
+	display: flex;
+	flex-direction: column;
+	
+}
+
+.header-main-pokemon {
+	display: flex;
+	align-items: center;
+	position: relative;
+	top: -65px;
+	
+}
+
+.number-pokemon {
+	position: absolute;
+	top: 50px;
+	left: 0;
+
+	font-size: 60px;
+	font-weight: 700;
+	color: white;
+}
+
+.container-img-pokemon {
+	order: 2;
+	padding: 0px 0px 80px 10px;
+	height: 400px;
+}
+
+.container-img-pokemon img {
+	height: 100%;
+	width: 100%;
+}
+
+.container-info-pokemon {
+	display: flex;
+	flex-direction: column;
+
+	order: 1;
+	flex: 1;
+}
+
+.container-info-pokemon h1 {
+	text-align: left;
+	font-size: 60px;
+}
+
+.info-pokemon {
+	display: flex;
+	justify-content: space-between;
+	padding: 0px 20px 0 20px;
+	margin-top: 10px;
+}
+
+.group-info{
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+}
+
+.group-info p {
+	font-weight: 700;
+	font-size: 20px;
+}
+
+/* Container para las estadísticas */
+.container-stats {
+	display: flex;
+	justify-content: center;
+	position: relative;
+	top: -135px;
+	padding: 5px;
+	background-color: #f8f8f8;
+	border-radius: 20px;
+	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+	margin-bottom: 20px;
+  }
+  
+  /* Contenedor de estadísticas individuales */
+.stat-group {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px; /* Reduce el gap para que el espacio esté bien distribuido */
+    margin-bottom: 15px; /* Aumenta el espacio entre grupos */
+}
+
+/* Nombre de la estadística */
+.stat-name {
+    flex: 1; /* Toma un espacio proporcional */
+    font-weight: 600;
+    font-size: 18px;
+    color: var(--color-primary-dark);
+    text-align: right; /* Alineación a la izquierda */
+}
+
+.stats-title{
+	text-align: center;
+	margin-bottom: 15px;
+}
+
+/* Barra de progreso */
+.progress-bar {
+    flex: 3; /* Ocupa la mayor parte del espacio */
+	width: 12rem;
+    height: 20px;
+    background-color: #e0e0e0;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+    position: relative; /* Necesario para posicionar el relleno */
+}
+
+/* Relleno de la barra de progreso */
+.progress-fill {
+    height: 100%;
+    /* background-color: var(--color-primary); */
+	/* background-image: url('./assets/logo.png'); Ruta de tu imagen */
+    background-repeat: no-repeat;
+    background-position: right;
+    background-size: 25px 20px;
+    border-radius: 10px 0 0 10px; 
+    transition: width 0.3s ease-in-out;
+    position: absolute; /* Posición absoluta dentro de .progress-bar */
+    left: 0;
+    top: 0;
+}
+
+/* Valor de la estadística */
+.counter-stat {
+    flex: 0.5; /* Toma el menor espacio */
+    font-weight: 600;
+    font-size: 16px;
+    color: #333;
+    text-align: right;
+}
+
+.box{
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	width: 650px;
+	height: 650px;
+	border: 2px solid #000;
+	box-shadow: 24px;
+	background-image: url('../assets/fondo.png');
+	background-repeat: no-repeat;
+	background-position: center;
+}
+
+@media (max-width: 768px) {
+	.main-pokemon {
+	display: flex;
+	flex-direction: column;
+	
+	}
+
+	.box{
+		position: absolute;
+		top: 25%;
+		left: 25%;
+		transform: translate(-25%, -25%);
+		width: 325px;
+		height: 325px;
+		border: 1px solid #000;
+		box-shadow: 24px;
+		background-image: url('../assets/fondo.png');
+		background-repeat: no-repeat;
+		background-position: center;
+	}
+
+	.header-main-pokemon {
+		display: flex;
+		align-items: center;
+		position: relative;
+		top: 5px;
+		
+	}
+
+	.number-pokemon {
+		position: absolute;
+		top: 0px;
+		left: 0;
+
+		font-size: 30px;
+		font-weight: 700;
+		color: white;
+	}
+
+	.container-img-pokemon {
+		order: 2;
+		padding: 0px 0px 30px 5px;
+		height: 160px;
+	}
+
+	.container-img-pokemon img {
+		height: 100%;
+		width: 100%;
+	}
+
+	.container-info-pokemon {
+		display: flex;
+		flex-direction: column;
+		order: 1;
+		flex: 1;
+	}
+
+	.container-info-pokemon h1 {
+		text-align: left;
+		font-size: 30px;
+	}
+
+	.info-pokemon {
+		display: flex;
+		justify-content: space-between;
+		padding: 0px 10px 0 10px;
+		margin-top: 1px;
+	}
+
+	.group-info{
+		display: flex;
+		flex-direction: column;
+		gap: 2px;
+	}
+
+	.group-info p {
+		font-weight: 700;
+		font-size: 15px;
+	}
+
+	/* Container para las estadísticas */
+	.container-stats {
+		display: flex;
+		justify-content: center;
+		position: relative;
+		top: -25px;
+		margin: auto;	
+		width: 95%;
+		
+		background-color: #f8f8f8;
+		border-radius: 20px;
+		box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+	}
+	
+	/* Contenedor de estadísticas individuales */
+	.stat-group {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		gap: 5px; /* Reduce el gap para que el espacio esté bien distribuido */
+		margin-bottom: 7px; /* Aumenta el espacio entre grupos */
+	}
+
+	/* Nombre de la estadística */
+	.stat-name {
+		flex: 1; /* Toma un espacio proporcional */
+		font-weight: 600;
+		font-size: 8px;
+		color: var(--color-primary-dark);
+		text-align: right; /* Alineación a la izquierda */
+	}
+
+	.stats-title{
+		text-align: center;
+		margin-bottom: 7px;
+	}
+
+	/* Barra de progreso */
+	.progress-bar {
+		flex: 3; /* Ocupa la mayor parte del espacio */
+		width: 5rem;
+		height: 10px;
+		background-color: #e0e0e0;
+		border-radius: 10px;
+		overflow: hidden;
+		box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+		position: relative; /* Necesario para posicionar el relleno */
+	}
+
+	/* Relleno de la barra de progreso */
+	.progress-fill {
+		height: 100%;
+		/* background-color: var(--color-primary); */
+		/* background-image: url('./assets/logo.png'); Ruta de tu imagen */
+		background-repeat: no-repeat;
+		background-position: right;
+		background-size: 12px 10px;
+		border-radius: 10px 0 0 10px; 
+		transition: width 0.3s ease-in-out;
+		position: absolute; /* Posición absoluta dentro de .progress-bar */
+		left: 0;
+		top: 0;
+	}
+
+	/* Valor de la estadística */
+	.counter-stat {
+		flex: 0.5; /* Toma el menor espacio */
+		font-weight: 600;
+		font-size: 8px;
+		color: #333;
+		text-align: right;
+	}
+	
+}

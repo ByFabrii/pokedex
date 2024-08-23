@@ -92,7 +92,7 @@ export const CardPokemon = ({ pokemon }) => {
         }}
       >
         <Fade in={open}>
-          <Box sx={style} className={`box ${pokemon.types[0].type.name}`} >
+          <Box className={`box ${pokemon.types[0].type.name}`} >
             <PokemonPage idPokemon={pokemon.id} />
           </Box>
         </Fade>
