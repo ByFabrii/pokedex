@@ -1,6 +1,7 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { PokemonContext } from '../Context/PokemonContext';
 
+
 export const FilterBar = () => {
 	const { active, handleCheckbox, setActive, type } = useContext(PokemonContext);
 	
@@ -21,6 +22,8 @@ export const FilterBar = () => {
                         />
                         <label htmlFor={type.name}>{type.name.charAt(0).toUpperCase() + type.name.slice(1)}</label>
                     </div>
+
+
                 ))}
 			</div>
 		</div>
