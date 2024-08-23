@@ -1,5 +1,5 @@
 import React, { useContext, useState, useEffect } from 'react';
-import { FilterBar, PokemonList } from '../components';
+import { FilterBar, PokemonList } from '../Components';
 import { PokemonContext } from '../Context/PokemonContext';
 import { Fab } from '@mui/material';
 import { KeyboardArrowUp } from '@mui/icons-material';
