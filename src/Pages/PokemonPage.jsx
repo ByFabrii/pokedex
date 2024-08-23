@@ -1,7 +1,10 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { Loader } from '../Components';
 import { PokemonContext } from '../Context/PokemonContext';
-import { primerMayuscula } from '.././Helper/Helper';
+
+export const primerMayuscula = (word) => {
+    return word[0].toUpperCase() + word.substring(1)
+}
 
 export const PokemonPage = ({ idPokemon }) => {
 
