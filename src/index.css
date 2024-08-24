@@ -58,6 +58,12 @@ header {
 	.logo img {
 		width: 85px;
 	}
+
+	* {
+	margin: 0;
+	padding: 1px;
+	box-sizing: border-box;
+	}
 }
 
 header form {

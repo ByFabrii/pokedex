@@ -164,7 +164,7 @@
 		left: 28%;
 		transform: translate(-25%, -25%);
 		width: 325px;
-		height: 325px;
+		height: 335px;
 		border: 1px solid #000;
 		box-shadow: 24px;
 		background-image: url('../assets/fondo.png');
@@ -239,9 +239,9 @@
 		display: flex;
 		justify-content: center;
 		position: relative;
-		top: -25px;
+		top: -45px;
 		margin: auto;	
-		width: 95%;
+		width: 94%;
 		
 		background-color: #f8f8f8;
 		border-radius: 20px;
