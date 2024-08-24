@@ -42,6 +42,7 @@
 }
 
 @media (max-width: 768px) {
+
 	/* Search component */
 	.form-group {
 		display: flex;
@@ -62,7 +63,7 @@
 	}
 
 	.icon-search {
-		width:15px;
+		width: 15px;
 		height: 15px;
 		stroke: #555;
 	}
@@ -79,5 +80,5 @@
 		cursor: pointer;
 		font-weight: 500;
 		letter-spacing: 1px;
-	}	
+	}
 }

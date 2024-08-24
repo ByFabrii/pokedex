@@ -1,22 +1,23 @@
 .main-pokemon {
 	display: flex;
 	flex-direction: column;
-	
+
 }
 
 .header-main-pokemon {
 	display: flex;
 	align-items: center;
 	position: relative;
-	top: -65px;
-	
+	top: -55px;
+	padding: 10px;
+
 }
 
 .number-pokemon {
 	position: absolute;
 	top: 50px;
 	left: 0;
-
+	padding: 10px;
 	font-size: 60px;
 	font-weight: 700;
 	color: white;
@@ -53,7 +54,7 @@
 	margin-top: 10px;
 }
 
-.group-info{
+.group-info {
 	display: flex;
 	flex-direction: column;
 	gap: 10px;
@@ -69,74 +70,83 @@
 	display: flex;
 	justify-content: center;
 	position: relative;
-	top: -135px;
-	padding: 5px;
+	top: -125px;
+	width: 90%;
+	left: 5%;
+	padding: 1px;
 	background-color: #f8f8f8;
 	border-radius: 20px;
 	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-	margin-bottom: 20px;
-  }
-  
-  /* Contenedor de estadísticas individuales */
+}
+
+/* Contenedor de estadísticas individuales */
 .stat-group {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 10px; /* Reduce el gap para que el espacio esté bien distribuido */
-    margin-bottom: 15px; /* Aumenta el espacio entre grupos */
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	gap: 10px;
+	/* Reduce el gap para que el espacio esté bien distribuido */
+	margin-bottom: 15px;
+	/* Aumenta el espacio entre grupos */
 }
 
 /* Nombre de la estadística */
 .stat-name {
-    flex: 1; /* Toma un espacio proporcional */
-    font-weight: 600;
-    font-size: 18px;
-    color: var(--color-primary-dark);
-    text-align: right; /* Alineación a la izquierda */
+	flex: 1;
+	/* Toma un espacio proporcional */
+	font-weight: 600;
+	font-size: 18px;
+	color: var(--color-primary-dark);
+	text-align: right;
+	/* Alineación a la izquierda */
 }
 
-.stats-title{
+.stats-title {
 	text-align: center;
 	margin-bottom: 15px;
 }
 
 /* Barra de progreso */
 .progress-bar {
-    flex: 3; /* Ocupa la mayor parte del espacio */
+	flex: 3;
+	/* Ocupa la mayor parte del espacio */
 	width: 12rem;
-    height: 20px;
-    background-color: #e0e0e0;
-    border-radius: 10px;
-    overflow: hidden;
-    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
-    position: relative; /* Necesario para posicionar el relleno */
+	height: 20px;
+	background-color: #e0e0e0;
+	border-radius: 10px;
+	overflow: hidden;
+	box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+	position: relative;
+	/* Necesario para posicionar el relleno */
 }
 
 /* Relleno de la barra de progreso */
 .progress-fill {
-    height: 100%;
-    /* background-color: var(--color-primary); */
+	height: 100%;
+	/* background-color: var(--color-primary); */
 	/* background-image: url('./assets/logo.png'); Ruta de tu imagen */
-    background-repeat: no-repeat;
-    background-position: right;
-    background-size: 25px 20px;
-    border-radius: 10px 0 0 10px; 
-    transition: width 0.3s ease-in-out;
-    position: absolute; /* Posición absoluta dentro de .progress-bar */
-    left: 0;
-    top: 0;
+	background-repeat: no-repeat;
+	background-position: right;
+	background-size: 25px 20px;
+	border-radius: 10px 0 0 10px;
+	transition: width 0.3s ease-in-out;
+	position: absolute;
+	/* Posición absoluta dentro de .progress-bar */
+	left: 0;
+	top: 0;
 }
 
 /* Valor de la estadística */
 .counter-stat {
-    flex: 0.5; /* Toma el menor espacio */
-    font-weight: 600;
-    font-size: 16px;
-    color: #333;
-    text-align: right;
+	flex: 0.5;
+	/* Toma el menor espacio */
+	font-weight: 600;
+	font-size: 16px;
+	color: #333;
+	text-align: right;
 }
 
-.box{
+.box {
 	position: absolute;
 	top: 50%;
 	left: 50%;
@@ -152,12 +162,12 @@
 
 @media (max-width: 768px) {
 	.main-pokemon {
-	display: flex;
-	flex-direction: column;
-	
+		display: flex;
+		flex-direction: column;
+
 	}
 
-	.box{
+	.box {
 		position: absolute;
 		padding: 0px 10px 0px 10px;
 		top: 40%;
@@ -178,14 +188,15 @@
 		align-items: center;
 		position: relative;
 		top: -10px;
-		
+		padding: 0px;
+
 	}
 
 	.number-pokemon {
 		position: absolute;
 		top: 8px;
 		left: 0;
-		
+		padding: 0;
 		font-size: 27px;
 		font-weight: 700;
 		color: white;
@@ -222,7 +233,7 @@
 		margin-top: 1px;
 	}
 
-	.group-info{
+	.group-info {
 		display: flex;
 		flex-direction: column;
 		font-size: 10px;
@@ -240,47 +251,53 @@
 		justify-content: center;
 		position: relative;
 		top: -35px;
-		margin: auto;	
+		left: 10px;
 		width: 94%;
-		
+		padding: 0;
 		background-color: #f8f8f8;
 		border-radius: 20px;
 		box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 	}
-	
+
 	/* Contenedor de estadísticas individuales */
 	.stat-group {
 		display: flex;
 		justify-content: space-between;
 		align-items: center;
-		gap: 5px; /* Reduce el gap para que el espacio esté bien distribuido */
-		margin-bottom: 7px; /* Aumenta el espacio entre grupos */
+		gap: 5px;
+		/* Reduce el gap para que el espacio esté bien distribuido */
+		margin-bottom: 7px;
+		/* Aumenta el espacio entre grupos */
 	}
 
 	/* Nombre de la estadística */
 	.stat-name {
-		flex: 1; /* Toma un espacio proporcional */
+		flex: 1;
+		/* Toma un espacio proporcional */
 		font-weight: 600;
 		font-size: 8px;
 		color: var(--color-primary-dark);
-		text-align: right; /* Alineación a la izquierda */
+		text-align: right;
+		/* Alineación a la izquierda */
 	}
 
-	.stats-title{
+	.stats-title {
 		text-align: center;
 		margin-bottom: 7px;
 	}
 
 	/* Barra de progreso */
 	.progress-bar {
-		flex: 3; /* Ocupa la mayor parte del espacio */
+		flex: 3;
+		/* Ocupa la mayor parte del espacio */
 		width: 5rem;
 		height: 10px;
 		background-color: #e0e0e0;
 		border-radius: 10px;
 		overflow: hidden;
 		box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
-		position: relative; /* Necesario para posicionar el relleno */
+		position: relative;
+		/* Necesario para posicionar el relleno */
 	}
 
 	/* Relleno de la barra de progreso */
@@ -291,20 +308,22 @@
 		background-repeat: no-repeat;
 		background-position: right;
 		background-size: 12px 10px;
-		border-radius: 10px 0 0 10px; 
+		border-radius: 10px 0 0 10px;
 		transition: width 0.3s ease-in-out;
-		position: absolute; /* Posición absoluta dentro de .progress-bar */
+		position: absolute;
+		/* Posición absoluta dentro de .progress-bar */
 		left: 0;
 		top: 0;
 	}
 
 	/* Valor de la estadística */
 	.counter-stat {
-		flex: 0.5; /* Toma el menor espacio */
+		flex: 0.5;
+		/* Toma el menor espacio */
 		font-weight: 600;
 		font-size: 8px;
 		color: #333;
 		text-align: right;
 	}
-	
+
 }

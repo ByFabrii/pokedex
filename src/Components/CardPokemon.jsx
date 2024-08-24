@@ -18,23 +18,9 @@ export const primerMayuscula = (word) => {
   return word[0].toUpperCase() + word.substring(1)
 }
 
-const style = {
-  position: 'absolute',
-  top: '50%',
-  left: '50%',
-  transform: 'translate(-50%, -50%)',
-  width: 650,
-  height: 650,
-  border: '2px solid #000',
-  boxShadow: 24,
-  p: 4,
-  backgroundImage:`url(${fondoIMG})`,
-  backgroundRepeat:'no-repeat',
-  backgroundPosition: 'center',
-};
 
 export const CardPokemon = ({ pokemon }) => {
-  
+
   const [open, setOpen] = React.useState(false);
   const handleOpenModal = () => {
     setOpen(true)
@@ -43,20 +29,17 @@ export const CardPokemon = ({ pokemon }) => {
   const handleClose = () => setOpen(false);
   return (
     <>
-      {/* <Link to={`/pokemon/${pokemon.id}`}> */}
-
       <Card sx={{ maxWidth: 345 }}>
         <CardActionArea onClick={handleOpenModal}>
-          
-            <CardMedia
-              component="img"
-              height="280"
-              image={pokemon.sprites.other.dream_world.front_default}
-              alt={`Pokemon ${pokemon.name}`}
-              className={`card-img ${pokemon.types[0].type.name}`}
-              sx={{backgroundImage:`url(${fondoIMG})`, border:'0px !important'}}
-            />
-          
+
+          <CardMedia
+            component="img"
+            image={pokemon.sprites.other.dream_world.front_default}
+            alt={`Pokemon ${pokemon.name}`}
+            className={`card-img ${pokemon.types[0].type.name}`}
+            sx={{ backgroundImage: `url(${fondoIMG})`, border: '0px !important' }}
+          />
+
           <CardContent>
             <Typography gutterBottom component="div">
               <span className='pokemon-id'>N° {pokemon.id}</span>
@@ -76,7 +59,6 @@ export const CardPokemon = ({ pokemon }) => {
           </CardContent>
         </CardActionArea>
       </Card>
-      {/* </Link> */}
 
       <Modal
         aria-labelledby="transition-modal-title"

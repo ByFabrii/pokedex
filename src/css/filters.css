@@ -12,7 +12,7 @@
 
 	margin-bottom: 20px;
 	cursor: pointer;
-	
+
 }
 
 .icon-filter .icon {
@@ -65,19 +65,19 @@
 }
 
 .close-button {
-    position: absolute;
-    top: 40px;
-    right: 25px;
-    background: none;
-    border: none;
-    font-size: 40px;
-    cursor: pointer;
+	position: absolute;
+	top: 40px;
+	right: 25px;
+	background: none;
+	border: none;
+	font-size: 40px;
+	cursor: pointer;
 }
 
 
 @media (max-width: 768px) {
 	/* Container Filters */
-	
+
 	/* Btn Filter */
 	.container-filter {
 		display: flex;
@@ -90,7 +90,7 @@
 
 		margin-bottom: 10px;
 		cursor: pointer;
-		
+
 	}
 
 	.icon-filter .icon {
@@ -98,6 +98,7 @@
 		height: 20px;
 		stroke: #555;
 	}
+
 	.container-filters {
 		display: flex;
 		justify-content: center;

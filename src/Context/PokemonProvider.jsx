@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
 import { PokemonContext } from "./PokemonContext";
 import { useForm } from "../Hooks/useForm";
 
@@ -34,52 +34,23 @@ export const PokemonProvider = ({ children }) => {
         setLoading(false);
     };
 
-	const getGlobalPokemons = async (limit = 1025) => {
-        const baseURL = 'https://pokeapi.co/api/v2/';
-        setLoading(true);
-
-        const res = await fetch(`${baseURL}pokemon?limit=${limit}&offset=0`);
-        const data = await res.json();
-
-        const promises = data.results.map(async pokemon => {
-            const res = await fetch(pokemon.url);
-            const data = await res.json();
-            return data;
-        });
-        const results = await Promise.all(promises);
-
-        setGlobalPokemons(results);
-        setLoading(false);
-    };
-	
-	const getPokemonByID = async id => {
+    const getPokemonByID = async id => {
         const baseURL = 'https://pokeapi.co/api/v2/';
         const res = await fetch(`${baseURL}pokemon/${id}`);
         const data = await res.json();
         return data;
     };
-	
-    // const searchPokemonByName = async (name) => {
-    //     setLoading(true);
-    //     try {
-    //         let results = globalPokemons.filter(pokemon => pokemon.name.includes(name.toLowerCase()));
-    
-    //         if (results.length === 0) {
-    //             // Buscar directamente en la API
-    //             const baseURL = 'https://pokeapi.co/api/v2/pokemon/';
-    //             const res = await fetch(`${baseURL}${name.toLowerCase()}`);
-    //             if (!res.ok) throw new Error('Pokemon not found');
-    //             const data = await res.json();
-    //             results = [data];
-    //         }
-            
-    //         setGlobalPokemons(results);
-    //     } catch (error) {
-    //         console.error(error.message);
-    //         setGlobalPokemons([]);
-    //     }
-    //     setLoading(false);
-    // };    
+
+    const searchPokemonByName = async (name) => {
+        // Suponiendo que tienes una API que devuelve un solo Pokémon
+        const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${name.toLowerCase()}`);
+        if (response.ok) {
+            const data = await response.json();
+            return [data];  // Devuelve un array con el objeto Pokémon
+        } else {
+            return [];  // Devuelve un array vacío si no encuentra el Pokémon
+        }
+    };
 
     const getTypes = async () => {
         const baseURL = 'https://pokeapi.co/api/v2/';
@@ -90,10 +61,6 @@ export const PokemonProvider = ({ children }) => {
 
     useEffect(() => {
         getTypes();
-    }, []);
-
-    useEffect(() => {
-        getGlobalPokemons();
     }, []);
 
     useEffect(() => {
@@ -131,13 +98,13 @@ export const PokemonProvider = ({ children }) => {
 
     const handleCheckbox = e => {
         const { name, checked } = e.target;
-        
+
         // Actualiza el estado de los tipos seleccionados
         setTypeSelected(prevTypeSelected => ({
             ...prevTypeSelected,
             [name]: checked,
         }));
-    
+
         // Filtra los Pokémon basados en los tipos seleccionados
         if (checked) {
             const filteredResults = allPokemons.filter(pokemon =>
@@ -151,7 +118,6 @@ export const PokemonProvider = ({ children }) => {
             setfilteredPokemons(filteredResults);
         }
     };
-    
 
     return (
         <PokemonContext.Provider
@@ -161,7 +127,7 @@ export const PokemonProvider = ({ children }) => {
                 onResetForm,
                 allPokemons,
                 globalPokemons,
-                // searchPokemonByName,
+                searchPokemonByName,
                 getPokemonByID,
                 onClickLoadMore,
                 loading,

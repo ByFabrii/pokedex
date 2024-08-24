@@ -5,12 +5,12 @@ import { Fab } from '@mui/material';
 import { KeyboardArrowUp } from '@mui/icons-material';
 
 export const HomePage = () => {
-    const { onClickLoadMore, active, setActive, setOffset } = useContext(PokemonContext);  // Asegúrate de incluir `setOffset`
+    const { active, setActive, setOffset } = useContext(PokemonContext);  // Asegúrate de incluir `setOffset`
     const [showScroll, setShowScroll] = useState(false);
 
     const handleScroll = () => {
         if (window.innerHeight + document.documentElement.scrollTop >= document.documentElement.offsetHeight) {
-            setOffset(prevOffset => prevOffset + 50);  // Incrementa el offset
+            setOffset(prevOffset => prevOffset + 20);  // Incrementa el offset
         }
     };
 
@@ -59,7 +59,7 @@ export const HomePage = () => {
             </div>
             <PokemonList />
             <FilterBar />
-            <Loader/>
+            <Loader />
             {showScroll && (
                 <Fab
                     color='warning'
