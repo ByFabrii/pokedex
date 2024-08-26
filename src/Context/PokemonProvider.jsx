@@ -67,9 +67,9 @@ export const PokemonProvider = ({ children }) => {
         getAllPokemons();
     }, [offset]);
 
-    const onClickLoadMore = () => {
-        setOffset(prevOffset => prevOffset + 20);
-    };
+    // const onClickLoadMore = () => {
+    //     setOffset(prevOffset => prevOffset + 20);
+    // };
 
     const [typeSelected, setTypeSelected] = useState({
         grass: false,
@@ -129,7 +129,7 @@ export const PokemonProvider = ({ children }) => {
                 globalPokemons,
                 searchPokemonByName,
                 getPokemonByID,
-                onClickLoadMore,
+                // onClickLoadMore,
                 loading,
                 setLoading,
                 active,

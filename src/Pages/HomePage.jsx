@@ -5,7 +5,7 @@ import { Fab } from '@mui/material';
 import { KeyboardArrowUp } from '@mui/icons-material';
 
 export const HomePage = () => {
-    const { active, setActive, setOffset } = useContext(PokemonContext);  // Asegúrate de incluir `setOffset`
+    const { active, setActive, setOffset } = useContext(PokemonContext);
     const [showScroll, setShowScroll] = useState(false);
 
     const handleScroll = () => {
