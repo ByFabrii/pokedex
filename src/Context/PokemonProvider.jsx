@@ -70,6 +70,20 @@ export const PokemonProvider = ({ children }) => {
         setType(data.results);
     };
 
+    const handleScroll = throttle(() => {
+        if (window.innerHeight + document.documentElement.scrollTop >= document.documentElement.offsetHeight) {
+            setOffset(prevOffset => prevOffset + 20);  // Incrementa el offset
+        }
+    }, 300);
+    
+    useEffect(() => {
+        window.addEventListener('scroll', handleScroll);
+
+        return () => {
+            window.removeEventListener('scroll', handleScroll);
+        };
+    }, [offset]);
+
     useEffect(() => {
         getTypes();
     }, []);

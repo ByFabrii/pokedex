@@ -9,11 +9,11 @@ export const HomePage = () => {
     const { active, setActive, setOffset } = useContext(PokemonContext);
     const [showScroll, setShowScroll] = useState(false);
 
-    const handleScroll = throttle(() => {
-        if (window.innerHeight + document.documentElement.scrollTop >= document.documentElement.offsetHeight) {
-            setOffset(prevOffset => prevOffset + 20);  // Incrementa el offset
-        }
-    }, 300);
+    // const handleScroll = throttle(() => {
+    //     if (window.innerHeight + document.documentElement.scrollTop >= document.documentElement.offsetHeight) {
+    //         setOffset(prevOffset => prevOffset + 20);  // Incrementa el offset
+    //     }
+    // }, 300);
 
     const checkScrollTop = () => {
         if (!showScroll && window.pageYOffset > 400) {
@@ -29,12 +29,8 @@ export const HomePage = () => {
 
     useEffect(() => {
         window.addEventListener('scroll', checkScrollTop);
-        window.addEventListener('scroll', handleScroll);  // Agrega el listener para el scroll
-
         return () => {
-            window.removeEventListener('scroll', checkScrollTop);
-            window.removeEventListener('scroll', handleScroll);  // Remueve el listener al desmontar
-        };
+            window.removeEventListener('scroll', checkScrollTop);};
     }, [showScroll]);
 
     return (
