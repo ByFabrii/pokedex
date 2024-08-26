@@ -3,16 +3,17 @@ import { FilterBar, Loader, PokemonList } from '../Components';
 import { PokemonContext } from '../Context/PokemonContext';
 import { Fab } from '@mui/material';
 import { KeyboardArrowUp } from '@mui/icons-material';
+import { throttle } from "lodash";
 
 export const HomePage = () => {
     const { active, setActive, setOffset } = useContext(PokemonContext);
     const [showScroll, setShowScroll] = useState(false);
 
-    const handleScroll = () => {
+    const handleScroll = throttle(() => {
         if (window.innerHeight + document.documentElement.scrollTop >= document.documentElement.offsetHeight) {
             setOffset(prevOffset => prevOffset + 20);  // Incrementa el offset
         }
-    };
+    }, 300);
 
     const checkScrollTop = () => {
         if (!showScroll && window.pageYOffset > 400) {

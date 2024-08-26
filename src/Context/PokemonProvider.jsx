@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { PokemonContext } from "./PokemonContext";
 import { useForm } from "../Hooks/useForm";
+import { throttle } from "lodash";
 
 export const PokemonProvider = ({ children }) => {
     const [allPokemons, setAllPokemons] = useState([]);
@@ -17,21 +18,31 @@ export const PokemonProvider = ({ children }) => {
     const [active, setActive] = useState(false);
 
     const getAllPokemons = async (limit = 20) => {
+
+        if (loadingMore) return;
+
         setLoadingMore(true);
+        console.log('Fetching Pokémon with offset:', offset);  // Depuración
+
         const baseURL = 'https://pokeapi.co/api/v2/';
-        const res = await fetch(`${baseURL}pokemon?limit=${limit}&offset=${offset}`);
-        const data = await res.json();
-
-        const promises = data.results.map(async pokemon => {
-            const res = await fetch(pokemon.url);
+         try {
+            const res = await fetch(`${baseURL}pokemon?limit=${limit}&offset=${offset}`);
             const data = await res.json();
-            return data;
-        });
-        const results = await Promise.all(promises);
 
-        setAllPokemons(prevPokemons => [...prevPokemons, ...results]);
-        setLoadingMore(false);
-        setLoading(false);
+            const promises = data.results.map(async pokemon => {
+                const res = await fetch(pokemon.url);
+                const data = await res.json();
+                return data;
+            });
+            const results = await Promise.all(promises);
+
+            setAllPokemons(prevPokemons => [...prevPokemons, ...results]);
+        } catch (error) {
+            console.error('Error fetching Pokémon:', error);
+        } finally {
+            setLoadingMore(false);
+            setLoading(false);
+        }
     };
 
     const getPokemonByID = async id => {
