@@ -1,10 +1,11 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import { PokemonContext } from '../Context/PokemonContext';
 
 import Backdrop from '@mui/material/Backdrop';
 import Box from '@mui/material/Box';
 import Modal from '@mui/material/Modal';
 import Fade from '@mui/material/Fade';
+import Tooltip from '@mui/material/Tooltip'; // Importa Tooltip si lo usas desde Material UI
 
 import { PokemonPage } from '../Pages/PokemonPage';
 
@@ -13,6 +14,8 @@ export const Searcher = () => {
     const [open, setOpen] = useState(false);
     const [pokemon, setPokemon] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [errorMessage, setErrorMessage] = useState('');
+    const [showTooltip, setShowTooltip] = useState(false); // Estado para controlar el tooltip
 
     const handleOpenModal = async (idPokemon) => {
         const data = await getPokemonByID(idPokemon);
@@ -26,9 +29,16 @@ export const Searcher = () => {
     const onSearchSubmit = async (e) => {
         e.preventDefault();
         const foundPokemon = await searchPokemonByName(valueSearch);
+
         if (foundPokemon.length > 0) {
             handleOpenModal(foundPokemon[0].id);
+            setErrorMessage(''); 
+        } else {
+            setErrorMessage('No se han encontrado resultados. Intenta escribiendo el nombre completo del pokemon.');
+            setShowTooltip(true); // Muestra el tooltip
+            setTimeout(() => setShowTooltip(false), 3000); // Oculta el tooltip después de 3 segundos
         }
+
         onResetForm();
     };
 
@@ -50,15 +60,16 @@ export const Searcher = () => {
                             d='M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z'
                         />
                     </svg>
-                    <input
-                        type='search'
-                        name='valueSearch'
-                        id=''
-                        value={valueSearch}
-                        onChange={onInputChange}
-                        placeholder='Buscar nombre de pokemon'
-                        required
-                    />
+                    <Tooltip title={errorMessage} open={showTooltip} placement="top" arrow>
+                        <input
+                            type='search'
+                            name='valueSearch'
+                            value={valueSearch}
+                            onChange={onInputChange}
+                            placeholder='Buscar nombre de pokemon'
+                            required
+                        />
+                    </Tooltip>
                 </div>
                 <button className='btn-search'>Buscar</button>
             </form>
