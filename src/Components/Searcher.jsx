@@ -89,7 +89,12 @@ export const Searcher = () => {
                     }}
                 >
                     <Fade in={open}>
-                        <Box className={`box ${pokemon.types[0].type.name}`} >
+                        <Box 
+                            className={`box ${pokemon.types[0].type.name}`} 
+                            sx={{
+                                outline: 'none', // Asegúrate de quitar cualquier outline predeterminado
+                              }}
+                            >
                             <PokemonPage idPokemon={pokemon.id} />
                         </Box>
                     </Fade>
