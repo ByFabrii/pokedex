@@ -8,6 +8,7 @@ export const PokemonProvider = ({ children }) => {
     const [globalPokemons, setGlobalPokemons] = useState([]);
     const [offset, setOffset] = useState(0);
     const [type, setType] = useState([]);
+    const [totalPokemons, setTotalPokemons] = useState(null); // Variable para el total de Pokémon
 
     const { valueSearch, onInputChange, onResetForm } = useForm({
         valueSearch: '',
@@ -17,9 +18,9 @@ export const PokemonProvider = ({ children }) => {
     const [loadingMore, setLoadingMore] = useState(false);
     const [active, setActive] = useState(false);
 
-    const getAllPokemons = async (limit = 20) => {
+    const getAllPokemons = async (limit = 50) => {
 
-        if (loadingMore) return;
+        if (loadingMore || (totalPokemons && allPokemons.length >= totalPokemons)) return;
 
         setLoadingMore(true);
         console.log('Fetching Pokémon with offset:', offset);  // Depuración
@@ -28,6 +29,11 @@ export const PokemonProvider = ({ children }) => {
          try {
             const res = await fetch(`${baseURL}pokemon?limit=${limit}&offset=${offset}`);
             const data = await res.json();
+
+            // Si es la primera carga, almacena el número total de Pokémon
+            if (!totalPokemons) {
+                setTotalPokemons(data.count);
+            }
 
             const promises = data.results.map(async pokemon => {
                 const res = await fetch(pokemon.url);
@@ -72,9 +78,9 @@ export const PokemonProvider = ({ children }) => {
 
     const handleScroll = throttle(() => {
         if (window.innerHeight + document.documentElement.scrollTop >= document.documentElement.offsetHeight) {
-            setOffset(prevOffset => prevOffset + 20);  // Incrementa el offset
+            setOffset(prevOffset => prevOffset + 50);  // Incrementa el offset
         }
-    }, 300);
+    }, 50);
     
     useEffect(() => {
         window.addEventListener('scroll', handleScroll);
@@ -163,6 +169,7 @@ export const PokemonProvider = ({ children }) => {
                 filteredPokemons,
                 type,
                 loadingMore,
+                totalPokemons,
                 setOffset,
             }}
         >

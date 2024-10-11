@@ -6,7 +6,7 @@ import { KeyboardArrowUp } from '@mui/icons-material';
 import { throttle } from "lodash";
 
 export const HomePage = () => {
-    const { active, setActive, setOffset } = useContext(PokemonContext);
+    const { active, setActive, setOffset, loadingMore, allPokemons, totalPokemons } = useContext(PokemonContext);
     const [showScroll, setShowScroll] = useState(false);
 
     // const handleScroll = throttle(() => {
@@ -56,7 +56,9 @@ export const HomePage = () => {
             </div>
             <PokemonList />
             <FilterBar />
-            <Loader />
+            {/* Solo muestra el loader si hay más Pokémon que cargar */}
+            {loadingMore && allPokemons.length < totalPokemons && <Loader />}
+            
             {showScroll && (
                 <Fab
                     color='warning'
