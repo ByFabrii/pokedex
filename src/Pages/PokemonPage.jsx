@@ -21,18 +21,33 @@ export const PokemonPage = ({ idPokemon, onClose }) => {
     const [loading, setLoading] = useState(true);
     const [pokemon, setPokemon] = useState({});
     const [fadeIn, setFadeIn] = useState(false);
+    const [currentId, setCurrentId] = useState(idPokemon); // Nuevo estado para rastrear el ID actual
 
-    const fetchPokemon = async idPokemon => {
-        const data = await getPokemonByID(idPokemon);
+    const fetchPokemon = async id => {
+        setLoading(true);
+        setFadeIn(false);
+        const data = await getPokemonByID(id);
         setPokemon(data);
         setLoading(false);
         setTimeout(() => setFadeIn(true), 100);
     };
 
+    // Actualizar cuando cambia el ID externo o el ID interno
     useEffect(() => {
-        fetchPokemon(idPokemon);
-        return () => setFadeIn(false);
+        if (idPokemon !== currentId) {
+            setCurrentId(idPokemon);
+        }
     }, [idPokemon]);
+
+    useEffect(() => {
+        fetchPokemon(currentId);
+        return () => setFadeIn(false);
+    }, [currentId]);
+
+    // Función para manejar la selección de un Pokémon desde el árbol evolutivo
+    const handleSelectPokemon = (id) => {
+        setCurrentId(id);
+    };
 
     if (loading) return <Loader />;
     
@@ -512,7 +527,11 @@ export const PokemonPage = ({ idPokemon, onClose }) => {
                         </Typography>
                         
                         {/* Implementación del árbol de evoluciones */}
-                        <EvolutionChain pokemonId={pokemon.id} mainType={mainType} />
+                        <EvolutionChain 
+                            pokemonId={pokemon.id} 
+                            mainType={mainType} 
+                            onSelectPokemon={handleSelectPokemon} 
+                        />
                     </Box>
                 </Box>
             </Box>

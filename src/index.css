@@ -17,7 +17,8 @@
 	--color-fighting: #d56723;
 	--color-dark: #707070;
 	--color-bug: #729f3f;
-	--color-dragon: linear-gradient(180deg, #53a4cf 50%, #f16e57 50%);
+	/* --color-dragon: linear-gradient(180deg, #53a4cf 50%, #f16e57 50%); */
+	--color-dragon: #53a4cf;
 	--color-electric: #bba909;
 	--color-fairy: #fdb9e9;
 	--color-shadow: #7b62a3;

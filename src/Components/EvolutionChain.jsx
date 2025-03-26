@@ -1,12 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { Box, Typography, CircularProgress, Paper, Avatar } from '@mui/material';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import { primerMayuscula } from '../Pages/PokemonPage';
+import { PokemonContext } from '../Context/PokemonContext';
 
-export const EvolutionChain = ({ pokemonId, mainType }) => {
+export const EvolutionChain = ({ pokemonId, mainType, onSelectPokemon }) => {
     const [evolutionData, setEvolutionData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const { getPokemonByID } = useContext(PokemonContext);
 
     useEffect(() => {
         const fetchEvolutionChain = async () => {
@@ -60,6 +62,21 @@ export const EvolutionChain = ({ pokemonId, mainType }) => {
             current,
             evolutions
         };
+    };
+
+    // Manejador para cuando se hace clic en un Pokémon de la cadena
+    const handlePokemonClick = async (id) => {
+        // No hacer nada si ya estamos viendo este Pokémon
+        if (id === pokemonId) return;
+        
+        try {
+            // Llamar a la función proporcionada por el componente padre
+            if (onSelectPokemon) {
+                onSelectPokemon(id);
+            }
+        } catch (error) {
+            console.error("Error al cambiar de Pokémon:", error);
+        }
     };
 
     if (loading) {
@@ -183,7 +200,7 @@ export const EvolutionChain = ({ pokemonId, mainType }) => {
                             </Box>
                         )}
                         
-                        {/* Pokémon */}
+                        {/* Pokémon (ahora clickeable) */}
                         <Box 
                             sx={{ 
                                 display: 'flex', 
@@ -195,6 +212,7 @@ export const EvolutionChain = ({ pokemonId, mainType }) => {
                             <Avatar
                                 src={evolution.pokemon.img}
                                 alt={evolution.pokemon.name}
+                                onClick={() => handlePokemonClick(evolution.pokemon.id)}
                                 sx={{
                                     width: { xs: 45, md: 55 },
                                     height: { xs: 45, md: 55 },
@@ -204,7 +222,35 @@ export const EvolutionChain = ({ pokemonId, mainType }) => {
                                     boxShadow: evolution.isHighlighted 
                                         ? `0 0 8px var(--color-${mainType})` 
                                         : 'none',
-                                    bgcolor: `rgba(var(--color-${evolution.pokemon.types[0].type.name}-rgb), 0.1)`
+                                    bgcolor: `rgba(var(--color-${evolution.pokemon.types[0].type.name}-rgb), 0.1)`,
+                                    cursor: evolution.isHighlighted ? 'default' : 'pointer',
+                                    transition: 'transform 0.2s, box-shadow 0.2s',
+                                    '&:hover': {
+                                        transform: evolution.isHighlighted ? 'none' : 'scale(1.1)',
+                                        boxShadow: evolution.isHighlighted 
+                                            ? `0 0 8px var(--color-${mainType})` 
+                                            : '0 4px 8px rgba(0,0,0,0.2)'
+                                    },
+                                    position: 'relative',
+                                    '&::after': evolution.isHighlighted ? {} : {
+                                        content: '""',
+                                        position: 'absolute',
+                                        top: -3,
+                                        right: -3,
+                                        width: 15,
+                                        height: 15,
+                                        borderRadius: '50%',
+                                        backgroundColor: '#f5f5f5',
+                                        border: '1px solid #ccc',
+                                        backgroundImage: 'linear-gradient(45deg, #ccc 25%, transparent 25%, transparent 75%, #ccc 75%, #ccc), linear-gradient(45deg, #ccc 25%, transparent 25%, transparent 75%, #ccc 75%, #ccc)',
+                                        backgroundSize: '4px 4px',
+                                        backgroundPosition: '0 0, 2px 2px',
+                                        opacity: 0,
+                                        transition: 'opacity 0.2s'
+                                    },
+                                    '&:hover::after': {
+                                        opacity: evolution.isHighlighted ? 0 : 1
+                                    }
                                 }}
                             />
                             <Typography 
@@ -250,12 +296,12 @@ export const EvolutionChain = ({ pokemonId, mainType }) => {
                 </Typography>
             )}
             
-            {/* Añadir información evolutiva adicional */}
+            {/* Información evolutiva adicional */}
             <Box sx={{ 
                 mt: 0, 
                 width: '100%',
                 borderTop: `1px solid rgba(var(--color-${mainType}-rgb), 0.2)`,
-                pt: 0,
+                pt: 0.5,
                 px: 1
             }}>
                 <Typography 
@@ -269,6 +315,8 @@ export const EvolutionChain = ({ pokemonId, mainType }) => {
                     }}
                 >
                     Algunos Pokémon evolucionan mediante objetos especiales, intercambio o en ubicaciones específicas.
+                    <br />
+                    <span style={{ fontWeight: 'bold' }}>Da clic en cualquier evolución para ver sus detalles.</span>
                 </Typography>
             </Box>
         </Paper>
