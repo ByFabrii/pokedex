@@ -5,7 +5,6 @@ import { throttle } from "lodash";
 
 export const PokemonProvider = ({ children }) => {
     const [allPokemons, setAllPokemons] = useState([]);
-    const [globalPokemons, setGlobalPokemons] = useState([]);
     const [offset, setOffset] = useState(0);
     const [type, setType] = useState([]);
     const [totalPokemons, setTotalPokemons] = useState(null);
@@ -18,6 +17,7 @@ export const PokemonProvider = ({ children }) => {
 
     const [loading, setLoading] = useState(true);
     const [loadingMore, setLoadingMore] = useState(false);
+    const [loadingFilter, setLoadingFilter] = useState(false);
     const [active, setActive] = useState(false);
     const [loadError, setLoadError] = useState(null);
 
@@ -35,6 +35,121 @@ export const PokemonProvider = ({ children }) => {
     const processedOffsetsRef = useRef(new Set());
     // Referencia para la cola de offsets pendientes
     const pendingOffsetsRef = useRef([]);
+
+    // --- Carga progresiva de Pokémon por tipo ---
+    // En vez de traer TODOS los Pokémon de un tipo de una sola vez (podían ser
+    // ~130 peticiones para un tipo grande), se trae un primer lote pequeño para
+    // pintar la pantalla rápido, y el resto se va pidiendo de a poco mientras
+    // el usuario scrollea (ver handleFilterScroll más abajo).
+    const FILTER_INITIAL_BATCH = 30;
+    const FILTER_SCROLL_BATCH = 20;
+
+    // typeName -> [{ pokemon: { name, url } }, ...] (respuesta cruda de /type/{nombre})
+    const typeNameListCache = useRef({});
+    // typeName -> array de Pokémon con detalle completo ya cargados para ese tipo
+    const typePokemonCache = useRef({});
+    // typeName -> { nextIndex, isComplete } - hasta dónde se avanzó en la lista de ese tipo
+    const typeFetchProgressRef = useRef({});
+    // Evita disparar dos "cargar más" en simultáneo mientras se scrollea
+    const filterLoadMoreLockRef = useRef(false);
+    // Se incrementa cada vez que cambia typeSelected; permite descartar
+    // resultados de una carga de scroll que llega tarde, después de que el
+    // usuario ya cambió de filtro.
+    const filterGenerationRef = useRef(0);
+
+    const getTypeNameList = useCallback(async (typeName) => {
+        if (typeNameListCache.current[typeName]) {
+            return typeNameListCache.current[typeName];
+        }
+
+        const baseURL = 'https://pokeapi.co/api/v2/';
+        const res = await fetch(`${baseURL}type/${typeName}`);
+        if (!res.ok) throw new Error(`Error al cargar tipo ${typeName}`);
+        const data = await res.json();
+
+        typeNameListCache.current[typeName] = data.pokemon;
+        return data.pokemon;
+    }, []);
+
+    // Carga el siguiente lote (batchSize) de Pokémon pendientes de un tipo.
+    // Si ese tipo ya está completo, no hace ninguna petición.
+    const loadMoreForType = useCallback(async (typeName, batchSize) => {
+        const progress = typeFetchProgressRef.current[typeName] || { nextIndex: 0, isComplete: false };
+
+        if (progress.isComplete) {
+            return typePokemonCache.current[typeName] || [];
+        }
+
+        let nameList;
+        try {
+            nameList = await getTypeNameList(typeName);
+        } catch (error) {
+            console.error(`Error al cargar tipo ${typeName}:`, error);
+            setLoadError(error.message);
+            return typePokemonCache.current[typeName] || [];
+        }
+
+        const slice = nameList.slice(progress.nextIndex, progress.nextIndex + batchSize);
+        const nextIndex = progress.nextIndex + slice.length;
+
+        if (slice.length === 0) {
+            typeFetchProgressRef.current[typeName] = { nextIndex, isComplete: true };
+            return typePokemonCache.current[typeName] || [];
+        }
+
+        // Reutilizar detalles que ya tenemos en memoria (evita refetch)
+        const existing = allPokemons.filter(pokemon =>
+            slice.some(p => p.pokemon.name === pokemon.name)
+        );
+        const needFetch = slice.filter(p =>
+            !existing.some(ep => ep.name === p.pokemon.name)
+        );
+
+        const chunkSize = 8; // Procesar en bloques de 8 para no saturar
+        const fetchedDetails = [];
+
+        for (let i = 0; i < needFetch.length; i += chunkSize) {
+            if (!isMounted.current) break;
+
+            const chunk = needFetch.slice(i, i + chunkSize);
+            const results = await Promise.all(
+                chunk.map(async p => {
+                    try {
+                        const detailRes = await fetch(p.pokemon.url);
+                        if (!detailRes.ok) throw new Error(`Error al cargar ${p.pokemon.name}`);
+                        return await detailRes.json();
+                    } catch (err) {
+                        console.error(`Error al cargar ${p.pokemon.name}:`, err);
+                        return null;
+                    }
+                })
+            );
+            fetchedDetails.push(...results.filter(Boolean));
+        }
+
+        const updatedList = [
+            ...(typePokemonCache.current[typeName] || []),
+            ...existing,
+            ...fetchedDetails,
+        ];
+        typePokemonCache.current[typeName] = updatedList;
+        typeFetchProgressRef.current[typeName] = {
+            nextIndex,
+            isComplete: nextIndex >= nameList.length,
+        };
+
+        return updatedList;
+    }, [allPokemons, getTypeNameList]);
+
+    // Combina en un solo array (sin duplicados) lo que hay cacheado para los
+    // tipos actualmente marcados.
+    const recomputeFilteredFromCache = useCallback((activeTypes) => {
+        const merged = activeTypes.flatMap(t => typePokemonCache.current[t] || []);
+        const uniquePokemons = merged.filter(
+            (pokemon, index, self) => index === self.findIndex(p => p.id === pokemon.id)
+        );
+        setfilteredPokemons(uniquePokemons);
+    }, []);
 
     // Función optimizada para obtener Pokémon con caché
     const getAllPokemons = useCallback(async (limit = 30) => {
@@ -284,33 +399,101 @@ export const PokemonProvider = ({ children }) => {
     const handleCheckbox = e => {
         const { name, checked } = e.target;
 
-        // Actualiza el estado de los tipos seleccionados
+        // Solo actualiza qué tipos están marcados; el useEffect de abajo
+        // es quien recalcula `filteredPokemons` a partir de este estado.
         setTypeSelected(prevTypeSelected => ({
             ...prevTypeSelected,
             [name]: checked,
         }));
-
-        // Filtrar Pokémon de manera más eficiente
-        if (checked) {
-            const filteredResults = allPokemons.filter(pokemon =>
-                pokemon.types.some(type => type.type.name === name)
-            );
-            
-            setfilteredPokemons(prevPokemons => {
-                // Eliminar duplicados
-                const combinedPokemons = [...prevPokemons, ...filteredResults];
-                return combinedPokemons.filter((pokemon, index, self) =>
-                    index === self.findIndex(p => p.id === pokemon.id)
-                );
-            });
-        } else {
-            setfilteredPokemons(prevPokemons => 
-                prevPokemons.filter(pokemon =>
-                    !pokemon.types.some(type => type.type.name === name)
-                )
-            );
-        }
     };
+
+    // Recalcula filteredPokemons cada vez que cambian los tipos marcados.
+    // Solo trae el primer lote (FILTER_INITIAL_BATCH) de cada tipo activo,
+    // usando /type/{nombre} como fuente de verdad de TODOS los Pokémon de ese
+    // tipo (no solo los que ya se cargaron por scroll). El resto se completa
+    // con handleFilterScroll, más abajo, a medida que el usuario scrollea.
+    useEffect(() => {
+        const activeTypes = Object.keys(typeSelected).filter(
+            typeName => typeSelected[typeName]
+        );
+
+        filterGenerationRef.current += 1;
+        const myGeneration = filterGenerationRef.current;
+
+        if (activeTypes.length === 0) {
+            setfilteredPokemons([]);
+            setLoadingFilter(false);
+            return;
+        }
+
+        let cancelled = false;
+        setLoadingFilter(true);
+
+        (async () => {
+            await Promise.all(
+                activeTypes.map(typeName => loadMoreForType(typeName, FILTER_INITIAL_BATCH))
+            );
+
+            if (cancelled || filterGenerationRef.current !== myGeneration) return;
+
+            recomputeFilteredFromCache(activeTypes);
+            setLoadingFilter(false);
+        })();
+
+        return () => {
+            cancelled = true;
+        };
+    }, [typeSelected, loadMoreForType, recomputeFilteredFromCache]);
+
+    // Mientras haya al menos un tipo marcado con Pokémon pendientes por cargar,
+    // seguir trayendo lotes (FILTER_SCROLL_BATCH) a medida que el usuario
+    // se acerca al final de la página — igual que el scroll infinito normal,
+    // pero acotado a los tipos filtrados.
+    useEffect(() => {
+        const activeTypes = Object.keys(typeSelected).filter(
+            typeName => typeSelected[typeName]
+        );
+
+        if (activeTypes.length === 0) return;
+
+        const myGeneration = filterGenerationRef.current;
+
+        const handleFilterScroll = throttle(() => {
+            if (filterLoadMoreLockRef.current) return;
+
+            const scrollHeight = Math.max(
+                document.body.scrollHeight,
+                document.documentElement.scrollHeight
+            );
+            const scrollPosition = window.innerHeight + window.scrollY;
+            if (scrollPosition < scrollHeight - 200) return;
+
+            const incompleteTypes = activeTypes.filter(
+                typeName => !typeFetchProgressRef.current[typeName]?.isComplete
+            );
+            if (incompleteTypes.length === 0) return;
+
+            filterLoadMoreLockRef.current = true;
+            setLoadingFilter(true);
+
+            Promise.all(
+                incompleteTypes.map(typeName => loadMoreForType(typeName, FILTER_SCROLL_BATCH))
+            )
+                .then(() => {
+                    if (filterGenerationRef.current !== myGeneration) return;
+                    recomputeFilteredFromCache(activeTypes);
+                })
+                .finally(() => {
+                    filterLoadMoreLockRef.current = false;
+                    if (filterGenerationRef.current === myGeneration) {
+                        setLoadingFilter(false);
+                    }
+                });
+        }, 300);
+
+        window.addEventListener('scroll', handleFilterScroll);
+        return () => window.removeEventListener('scroll', handleFilterScroll);
+    }, [typeSelected, loadMoreForType, recomputeFilteredFromCache]);
 
     return (
         <PokemonContext.Provider
@@ -319,7 +502,6 @@ export const PokemonProvider = ({ children }) => {
                 onInputChange,
                 onResetForm,
                 allPokemons,
-                globalPokemons,
                 searchPokemonByName,
                 getPokemonByID,
                 loading,
@@ -330,6 +512,7 @@ export const PokemonProvider = ({ children }) => {
                 filteredPokemons,
                 type,
                 loadingMore,
+                loadingFilter,
                 totalPokemons,
                 setOffset,
                 loadError

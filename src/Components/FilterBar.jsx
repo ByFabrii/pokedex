@@ -52,7 +52,7 @@ const typeIcons = {
 };
 
 export const FilterBar = () => {
-    const { active, handleCheckbox, setActive, type, filteredPokemons } = useContext(PokemonContext);
+    const { active, handleCheckbox, setActive, type, filteredPokemons, loadingFilter } = useContext(PokemonContext);
     const [selectedTypes, setSelectedTypes] = useState([]);
     const [selectedCount, setSelectedCount] = useState(0);
     const [isApplying, setIsApplying] = useState(false);
@@ -1090,10 +1090,21 @@ export const FilterBar = () => {
                                         justifyContent: 'center'
                                     }}
                                 >
-                                    <CatchingPokemonIcon sx={{ color: '#cc0000', mr: 1 }} />
-                                    <Typography variant="body2" sx={{ fontWeight: 'bold', color: '#333' }}>
-                                        {filteredPokemons.length} Pokémon{filteredPokemons.length !== 1 && 's'} encontrado{filteredPokemons.length !== 1 && 's'}
-                                    </Typography>
+                                    {loadingFilter ? (
+                                        <>
+                                            <CircularProgress size={18} sx={{ color: '#cc0000', mr: 1.5 }} />
+                                            <Typography variant="body2" sx={{ fontWeight: 'bold', color: '#333' }}>
+                                                Buscando Pokémon...
+                                            </Typography>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <CatchingPokemonIcon sx={{ color: '#cc0000', mr: 1 }} />
+                                            <Typography variant="body2" sx={{ fontWeight: 'bold', color: '#333' }}>
+                                                {filteredPokemons.length} Pokémon{filteredPokemons.length !== 1 && 's'} encontrado{filteredPokemons.length !== 1 && 's'}
+                                            </Typography>
+                                        </>
+                                    )}
                                 </Paper>
                             </Fade>
                         )}
