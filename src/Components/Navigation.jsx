@@ -1,8 +1,14 @@
+import { useContext } from 'react';
 import { Link, Outlet } from 'react-router-dom';
+import { Badge, Box, IconButton } from '@mui/material';
+// import CompareArrowsIcon from '@mui/icons-material/CompareArrows'; // Comparador desactivado por ahora
+import FavoriteIcon from '@mui/icons-material/Favorite';
 import logo from '../assets/poke.png'
 import { Searcher } from './Searcher';
+import { FavoritesContext } from '../Context/FavoritesContext';
 
 export const Navigation = () => {
+	const { favorites } = useContext(FavoritesContext);
 	return (
 		<>
 			<header className='container'>
@@ -12,9 +18,29 @@ export const Navigation = () => {
 						alt='Logo Pokedex'
 					/>
 				</Link>
-				<Searcher />
+				<Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+					<nav aria-label="Buscar Pokémon">
+						<Searcher />
+					</nav>
+					<Link to='/favoritos' aria-label="Mis favoritos">
+						<Badge badgeContent={favorites.length} color="error" max={99} invisible={favorites.length === 0}>
+							<IconButton sx={{ color: '#cc0000' }}>
+								<FavoriteIcon />
+							</IconButton>
+						</Badge>
+					</Link>
+					{/* Comparador desactivado por ahora (ver ComparadorPage.jsx y AppRouter.jsx)
+					<Link to='/comparar' aria-label="Comparador de Pokémon">
+						<IconButton sx={{ color: '#666' }}>
+							<CompareArrowsIcon />
+						</IconButton>
+					</Link>
+					*/}
+				</Box>
 			</header>
-			<Outlet />
+			<main>
+				<Outlet />
+			</main>
 		</>
 	);
 };

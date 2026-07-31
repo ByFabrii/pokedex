@@ -1,11 +1,14 @@
 import AppRouter from './AppRouter'
 import { PokemonProvider } from './Context/PokemonProvider'
+import { FavoritesProvider } from './Context/FavoritesProvider'
 
 function App() {
   return (
-    <PokemonProvider>
-      <AppRouter/>
-    </PokemonProvider>
+    <FavoritesProvider>
+      <PokemonProvider>
+        <AppRouter/>
+      </PokemonProvider>
+    </FavoritesProvider>
   )
 }
 

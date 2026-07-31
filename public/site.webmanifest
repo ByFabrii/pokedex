@@ -1,0 +1,16 @@
+{
+  "name": "Pokedex",
+  "short_name": "Pokedex",
+  "description": "Pokédex interactiva: busca, filtra y descubre estadísticas, tipos, habilidades y cadenas evolutivas de todos los Pokémon.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#2c2c34",
+  "icons": [
+    {
+      "src": "/favicon.png",
+      "sizes": "500x500",
+      "type": "image/png"
+    }
+  ]
+}

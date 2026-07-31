@@ -1,4 +1,5 @@
 import React, { useContext, useState, useEffect } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { FilterBar, Loader, PokemonList } from '../Components';
 import { PokemonContext } from '../Context/PokemonContext';
 import { Fab, Alert, Snackbar } from '@mui/material';
@@ -49,20 +50,31 @@ export const HomePage = () => {
 
     return (
         <>
-            
+            <Helmet>
+                <title>Pokedex — Explora, busca y filtra todos los Pokémon</title>
+                <meta name="description" content="Busca cualquier Pokémon por nombre, filtra por tipo y consulta estadísticas, habilidades y cadenas evolutivas en esta Pokédex interactiva." />
+                <link rel="canonical" href="https://pokedex.fabrizziodev.com/" />
+                <meta property="og:title" content="Pokedex — Explora, busca y filtra todos los Pokémon" />
+                <meta property="og:description" content="Busca cualquier Pokémon por nombre, filtra por tipo y consulta estadísticas, habilidades y cadenas evolutivas." />
+                <meta property="og:url" content="https://pokedex.fabrizziodev.com/" />
+            </Helmet>
+
+            <h1 className="visually-hidden">Pokedex — Lista de Pokémon</h1>
+
             <PokemonList />
             <FilterBar />
-            
+
             {showScroll && (
                 <Fab
                     color='warning'
                     size="medium"
                     onClick={scrollToTop}
-                    style={{ 
-                        position: 'fixed', 
-                        bottom: '20px', 
+                    aria-label="Volver arriba"
+                    style={{
+                        position: 'fixed',
+                        bottom: '20px',
                         right: '20px',
-                        zIndex: 1000 
+                        zIndex: 1000
                     }}
                 >
                     <KeyboardArrowUp />

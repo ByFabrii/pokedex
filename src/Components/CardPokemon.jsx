@@ -3,25 +3,29 @@ import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import CardMedia from '@mui/material/CardMedia';
 import Typography from '@mui/material/Typography';
-import { CardActionArea, Skeleton } from '@mui/material';
+import { CardActionArea, IconButton, Skeleton } from '@mui/material';
 import Box from '@mui/material/Box';
 import Modal from '@mui/material/Modal';
 import Backdrop from '@mui/material/Backdrop';
 import Fade from '@mui/material/Fade';
+import FavoriteIcon from '@mui/icons-material/Favorite';
+import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 
 import { PokemonPage } from '../Pages/PokemonPage';
+import { FavoritesContext } from '../Context/FavoritesContext';
 
 export const primerMayuscula = (word) => {
   return word[0].toUpperCase() + word.substring(1)
 }
 
 export const CardPokemon = ({ pokemon }) => {
+  const { isFavorite, toggleFavorite } = React.useContext(FavoritesContext);
   const [open, setOpen] = React.useState(false);
   const [imageLoaded, setImageLoaded] = React.useState(false);
   const [imageError, setImageError] = React.useState(false);
   const [isVisible, setIsVisible] = React.useState(false);
   const cardRef = React.useRef(null);
-  
+
   const handleOpenModal = () => setOpen(true);
   const handleClose = () => setOpen(false);
   
@@ -122,7 +126,7 @@ export const CardPokemon = ({ pokemon }) => {
           }
         }}
       >
-        <CardActionArea 
+        <CardActionArea
           onClick={handleOpenModal}
           sx={{
             height: '100%',
@@ -289,6 +293,24 @@ export const CardPokemon = ({ pokemon }) => {
             </Box>
           </CardContent>
         </CardActionArea>
+
+        <IconButton
+          onClick={(e) => { e.preventDefault(); e.stopPropagation(); toggleFavorite(pokemon); }}
+          aria-label={isFavorite(pokemon.id) ? 'Quitar de favoritos' : 'Añadir a favoritos'}
+          size="small"
+          sx={{
+            position: 'absolute',
+            top: 10,
+            left: 10,
+            zIndex: 3,
+            bgcolor: 'rgba(255,255,255,0.75)',
+            '&:hover': { bgcolor: 'rgba(255,255,255,0.95)' }
+          }}
+        >
+          {isFavorite(pokemon.id)
+            ? <FavoriteIcon sx={{ color: '#cc0000', fontSize: '1.1rem' }} />
+            : <FavoriteBorderIcon sx={{ color: '#666', fontSize: '1.1rem' }} />}
+        </IconButton>
       </Card>
 
       {/* Modal con carga diferida */}
@@ -304,17 +326,22 @@ export const CardPokemon = ({ pokemon }) => {
         }}
       >
         <Fade in={open}>
-          <Box 
+          <Box
             sx={{
               outline: 'none',
               position: 'absolute',
               top: '50%',
               left: '50%',
               transform: 'translate(-50%, -50%)',
-              width: { xs: '95%', sm: '90%', md: '650px' },
-              maxHeight: { xs: '90vh', md: '85vh' },
+              width: { xs: '92%', sm: '90%', md: '650px' },
+              maxHeight: '85vh',
               borderRadius: '15px',
-              overflow: 'visible',
+              // En desktop el contenido cabe cómodo y overflow 'visible' deja que la
+              // imagen "asome" sobre el borde superior (margen negativo intencional).
+              // En mobile el contenido nuevo (descripción, debilidades, etc.) sí supera
+              // el alto disponible, así que ahí necesitamos scroll real dentro de la modal.
+              overflow: { xs: 'auto', sm: 'auto', md: 'visible' },
+              WebkitOverflowScrolling: 'touch',
               boxShadow: '0 10px 30px rgba(0, 0, 0, 0.2)',
               zIndex: 9999,
             }}

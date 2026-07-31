@@ -266,11 +266,11 @@ export const Searcher = () => {
         // Asegurarse de que el modal esté listo para cargar
         setModalReady(true);
         setSearchLoading(true);
-        
+
         try {
             const data = await getPokemonByID(idPokemon);
             setPokemon(data);
-            
+
             // Establecer la carga inmediatamente para mejorar la percepción de velocidad
             setTimeout(() => {
                 setOpen(true);
@@ -529,10 +529,11 @@ export const Searcher = () => {
                                         top: '50%',
                                         left: '50%',
                                         transform: 'translate(-50%, -50%)',
-                                        width: { xs: '95%', sm: '90%', md: '650px' },
-                                        maxHeight: { xs: '90vh', md: '85vh' },
+                                        width: { xs: '92%', sm: '90%', md: '650px' },
+                                        maxHeight: '85vh',
                                         borderRadius: '15px',
-                                        overflow: 'visible',
+                                        overflow: { xs: 'auto', sm: 'auto', md: 'visible' },
+                                        WebkitOverflowScrolling: 'touch',
                                         boxShadow: '0 10px 30px rgba(0, 0, 0, 0.2)',
                                         zIndex: 9999,
                                     }}

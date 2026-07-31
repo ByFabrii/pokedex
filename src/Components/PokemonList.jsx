@@ -16,7 +16,7 @@ export const PokemonList = () => {
 		<>
 				{/* Ya hay resultados de un filtro anterior, pero se está actualizando (ej. se agregó otro tipo) */}
 				{loadingFilter && <Loader message="Actualizando resultados..." />}
-				<div className='card-list-pokemon container'>
+				<section aria-label="Resultados de Pokémon" className='card-list-pokemon container'>
 					{filteredPokemons.length ? (
 						<>
 							{filteredPokemons.map(pokemon => (
@@ -30,7 +30,7 @@ export const PokemonList = () => {
 							))}
 						</>
 					)}
-				</div>
+				</section>
 		</>
 	);
 };

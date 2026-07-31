@@ -1,16 +1,20 @@
-import React, { useContext, useEffect, useState } from 'react';
-import { Loader } from '../Components';
+import React, { useContext, useEffect, useMemo, useState } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
+import { Loader, StatBar } from '../Components';
 import { PokemonContext } from '../Context/PokemonContext';
-import { Box, Typography, Chip, Paper, IconButton, Grid } from '@mui/material';
+import { FavoritesContext } from '../Context/FavoritesContext';
+import { Box, Typography, Chip, Paper, IconButton, Grid, Tooltip } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import FavoriteIcon from '@mui/icons-material/Favorite';
 import HeightIcon from '@mui/icons-material/Height';
 import FitnessCenterIcon from '@mui/icons-material/FitnessCenter';
-import CatchingPokemonIcon from '@mui/icons-material/CatchingPokemon';
-import BoltIcon from '@mui/icons-material/Bolt';
-import ShieldIcon from '@mui/icons-material/Shield';
-import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
+import VolumeUpIcon from '@mui/icons-material/VolumeUp';
+import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
+import FavoriteIcon from '@mui/icons-material/Favorite';
+import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import { EvolutionChain } from '../Components/EvolutionChain';
+import { statIcons, statNames } from '../utils/statMeta';
+import { getTypeEffectiveness } from '../utils/typeEffectiveness';
 
 export const primerMayuscula = (word) => {
     return word[0].toUpperCase() + word.substring(1);
@@ -18,10 +22,15 @@ export const primerMayuscula = (word) => {
 
 export const PokemonPage = ({ idPokemon, onClose }) => {
     const { getPokemonByID } = useContext(PokemonContext);
+    const { isFavorite, toggleFavorite } = useContext(FavoritesContext);
+    const params = useParams();
+    const navigate = useNavigate();
+    const resolvedId = idPokemon ?? params.id;
+    const handleClose = onClose ?? (() => navigate('/'));
     const [loading, setLoading] = useState(true);
     const [pokemon, setPokemon] = useState({});
     const [fadeIn, setFadeIn] = useState(false);
-    const [currentId, setCurrentId] = useState(idPokemon); // Nuevo estado para rastrear el ID actual
+    const [currentId, setCurrentId] = useState(resolvedId); // Nuevo estado para rastrear el ID actual
 
     const fetchPokemon = async id => {
         setLoading(true);
@@ -34,52 +43,146 @@ export const PokemonPage = ({ idPokemon, onClose }) => {
 
     // Actualizar cuando cambia el ID externo o el ID interno
     useEffect(() => {
-        if (idPokemon !== currentId) {
-            setCurrentId(idPokemon);
+        if (resolvedId !== currentId) {
+            setCurrentId(resolvedId);
         }
-    }, [idPokemon]);
+    }, [resolvedId]);
 
     useEffect(() => {
         fetchPokemon(currentId);
         return () => setFadeIn(false);
     }, [currentId]);
 
-    // Función para manejar la selección de un Pokémon desde el árbol evolutivo
+    // Función para manejar la selección de un Pokémon desde el árbol evolutivo o una
+    // forma alternativa. Dentro de la modal (idPokemon viene por prop) solo actualiza
+    // el estado interno, sin tocar la URL, para no disparar la ruta de página completa.
+    // Si se usa como página completa (acceso directo por URL), sí navega para mantener
+    // el deep-link correcto.
     const handleSelectPokemon = (id) => {
-        setCurrentId(id);
+        if (idPokemon) {
+            setCurrentId(id);
+        } else {
+            navigate(`/pokemon/${id}`);
+        }
     };
+
+    // Debilidades y resistencias, combinando los 1-2 tipos del Pokémon actual.
+    const [weaknesses, setWeaknesses] = useState(null);
+    useEffect(() => {
+        if (!pokemon?.types) return;
+        let cancelled = false;
+        setWeaknesses(null);
+        getTypeEffectiveness(pokemon.types.map(t => t.type.name))
+            .then(result => { if (!cancelled) setWeaknesses(result); })
+            .catch(err => {
+                console.error('Error al calcular debilidades:', err);
+                if (!cancelled) setWeaknesses(null);
+            });
+        return () => { cancelled = true; };
+    }, [pokemon?.id]);
+
+    // Cuando esta vista se muestra a pantalla completa (ruta /pokemon/:id, sin modal
+    // encima), el header no tiene fondo propio y deja ver el patrón de pokebolas del
+    // body. Mientras se está viendo un Pokémon, reemplazamos ese fondo por el color de
+    // su tipo para que el header se integre con el degradado del panel, sin costura.
+    const currentMainType = pokemon?.types?.[0]?.type?.name;
+    useEffect(() => {
+        if (idPokemon || !currentMainType) return;
+        document.body.style.backgroundColor = `var(--color-${currentMainType})`;
+        document.body.style.backgroundImage = 'none';
+        return () => {
+            document.body.style.backgroundColor = '';
+            document.body.style.backgroundImage = '';
+        };
+    }, [idPokemon, currentMainType]);
+
+    // Datos de especie (compartidos por la descripción Pokédex y las formas alternativas).
+    const [speciesData, setSpeciesData] = useState(null);
+    useEffect(() => {
+        if (!pokemon?.species?.url) return;
+        let cancelled = false;
+        setSpeciesData(null);
+        fetch(pokemon.species.url)
+            .then(res => {
+                if (!res.ok) throw new Error('Error al cargar datos de especie');
+                return res.json();
+            })
+            .then(data => { if (!cancelled) setSpeciesData(data); })
+            .catch(err => {
+                console.error(err);
+                if (!cancelled) setSpeciesData(null);
+            });
+        return () => { cancelled = true; };
+    }, [pokemon?.species?.url]);
+
+    const flavorText = useMemo(() => {
+        if (!speciesData) return null;
+        const entries = speciesData.flavor_text_entries || [];
+        const chosen = entries.find(e => e.language.name === 'es') || entries.find(e => e.language.name === 'en');
+        if (!chosen) return null;
+        return chosen.flavor_text.replace(/[\n\f\r]+/g, ' ').replace(/\s+/g, ' ').trim();
+    }, [speciesData]);
+
+    // Sprite shiny: se resetea cada vez que cambia el Pokémon mostrado.
+    const [showShiny, setShowShiny] = useState(false);
+    useEffect(() => { setShowShiny(false); }, [pokemon?.id]);
 
     if (loading) return <Loader />;
-    
-    const mainType = pokemon.types[0].type.name;
-    const statIcons = {
-        hp: <FavoriteIcon fontSize="small" sx={{ color: '#ff5959' }} />,
-        attack: <BoltIcon fontSize="small" sx={{ color: '#f5ac78' }} />,
-        defense: <ShieldIcon fontSize="small" sx={{ color: '#fae078' }} />,
-        'special-attack': <AutoFixHighIcon fontSize="small" sx={{ color: '#9db7f5' }} />,
-        'special-defense': <ShieldIcon fontSize="small" sx={{ color: '#a7db8d' }} />,
-        speed: <CatchingPokemonIcon fontSize="small" sx={{ color: '#fa92b2' }} />
-    };
 
-    const statNames = {
-        hp: 'HP',
-        attack: 'Ataque',
-        defense: 'Defensa',
-        'special-attack': 'Ataque Esp.',
-        'special-defense': 'Defensa Esp.',
-        speed: 'Velocidad'
+    const mainType = pokemon.types[0].type.name;
+    const hasShiny = Boolean(pokemon?.sprites?.other?.home?.front_shiny);
+    const displayedSprite = (showShiny && hasShiny)
+        ? pokemon.sprites.other.home.front_shiny
+        : pokemon.sprites.other.home.front_default;
+
+    // Cuando no llega idPokemon por prop, este componente está montado directamente
+    // por la ruta /pokemon/:id (sin modal encima) y debe ocupar toda la pantalla.
+    const isFullPage = !idPokemon;
+    // A pantalla completa, el contenido legible se centra en un ancho cómodo
+    // (igual que ".container" en el resto del sitio) en vez de quedar como una
+    // columna angosta perdida en una pantalla ancha.
+    const contentWidthSx = isFullPage ? { width: '100%', maxWidth: '1200px', mx: 'auto' } : {};
+
+    const pokemonName = primerMayuscula(pokemon.name);
+    const pokemonTypeNames = pokemon.types.map(type => type.type.name);
+    const canonicalUrl = `https://pokedex.fabrizziodev.com/pokemon/${pokemon.id}`;
+    const jsonLd = {
+        '@context': 'https://schema.org',
+        '@type': 'Thing',
+        name: pokemonName,
+        identifier: String(pokemon.id),
+        description: `${pokemonName} es un Pokémon de tipo ${pokemonTypeNames.join(', ')}.`,
+        image: pokemon.sprites.other.home.front_default,
+        additionalProperty: pokemon.stats.map(stat => ({
+            '@type': 'PropertyValue',
+            name: statNames[stat.stat.name] || stat.stat.name,
+            value: stat.base_stat,
+        })),
     };
 
     return (
-        <Box 
-            sx={{ 
+        <>
+        <Helmet>
+            <title>{`${pokemonName} (#${pokemon.id}) — Pokedex`}</title>
+            <meta name="description" content={`${pokemonName}: tipo ${pokemonTypeNames.join(' / ')}, estadísticas base, habilidades y cadena evolutiva.`} />
+            <link rel="canonical" href={canonicalUrl} />
+            <meta property="og:title" content={`${pokemonName} — Pokedex`} />
+            <meta property="og:description" content={`Estadísticas, tipo y habilidades de ${pokemonName}.`} />
+            <meta property="og:image" content={pokemon.sprites.other.home.front_default} />
+            <meta property="og:url" content={canonicalUrl} />
+            <meta name="twitter:card" content="summary_large_image" />
+            <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>
+        </Helmet>
+        <Box
+            sx={{
                 height: '100%',
+                minHeight: isFullPage ? '100vh' : undefined,
                 width: '100%',
                 display: 'flex',
                 flexDirection: 'column',
                 position: 'relative',
                 // overflow: 'hidden',
-                borderRadius: '15px',
+                borderRadius: isFullPage ? 0 : '15px',
                 backgroundColor: '#fff',
                 opacity: fadeIn ? 1 : 0,
                 transform: fadeIn ? 'translateY(0)' : 'translateY(10px)',
@@ -87,34 +190,36 @@ export const PokemonPage = ({ idPokemon, onClose }) => {
             }}
         >
             {/* Fondo estilizado según el tipo (más pequeño) */}
-            <Box 
+            <Box
                 sx={{
                     position: 'absolute',
                     top: 0,
                     left: 0,
                     right: 0,
-                    height: '30%', // Reducido del 45% anterior
+                    // En pantalla completa "30%" queda relativo a un contenedor sin
+                    // altura fija y no se pinta bien; usamos una altura en vh, que
+                    // siempre es un valor real sin importar el contenedor padre.
+                    height: isFullPage ? '45vh' : '30%', // Reducido del 45% anterior
                     background: `linear-gradient(to bottom, var(--color-${mainType}), rgba(255,255,255,0.7))`,
                     zIndex: 0,
                 }}
             />
             
             {/* Botón para cerrar el modal */}
-            {onClose && (
-                <IconButton 
-                    onClick={onClose} 
-                    sx={{ 
-                        position: 'absolute', 
-                        top: 10, 
-                        left: 10, 
-                        zIndex: 10,
-                        bgcolor: 'rgba(255,255,255,0.8)',
-                        '&:hover': { bgcolor: 'rgba(255,255,255,0.95)' }
-                    }}
-                >
-                    <ArrowBackIcon />
-                </IconButton>
-            )}
+            <IconButton
+                onClick={handleClose}
+                aria-label="Volver"
+                sx={{
+                    position: 'absolute',
+                    top: 10,
+                    left: 10,
+                    zIndex: 10,
+                    bgcolor: 'rgba(255,255,255,0.8)',
+                    '&:hover': { bgcolor: 'rgba(255,255,255,0.95)' }
+                }}
+            >
+                <ArrowBackIcon />
+            </IconButton>
             
             {/* Número de Pokémon */}
             <Typography 
@@ -135,14 +240,15 @@ export const PokemonPage = ({ idPokemon, onClose }) => {
             </Typography>
 
             {/* Sección superior compacta con imagen y datos básicos */}
-            <Grid 
-                container 
-                sx={{ 
+            <Grid
+                container
+                sx={{
                     position: 'relative',
                     zIndex: 1,
                     pt: { xs: 3, md: 3 },
                     pb: { xs: 0, md: 0 },
                     px: { xs: 2, md: 3 },
+                    ...contentWidthSx,
                 }}
             >
                 {/* Columna izquierda: Imagen */}
@@ -157,7 +263,7 @@ export const PokemonPage = ({ idPokemon, onClose }) => {
                 }}>
                     <Box 
                         component="img"
-                        src={pokemon.sprites.other.home.front_default}
+                        src={displayedSprite}
                         alt={`Pokemon ${pokemon?.name}`}
                         sx={{
                             width: '110%', // Aumentar el tamaño al 120%
@@ -172,19 +278,31 @@ export const PokemonPage = ({ idPokemon, onClose }) => {
                 {/* Columna derecha: Nombre, tipos, altura y peso */}
                 <Grid item xs={7} md={7} sx={{ pl: { xs: 1, md: 2 } }}>
                     {/* Nombre del Pokemon */}
-                    <Typography 
-                        variant="h4" 
-                        component="h1"
-                        sx={{
-                            fontSize: { xs: '1.3rem', md: '1.6rem' },
-                            fontWeight: 700,
-                            color: '#333',
-                            mb: 0.5
-                        }}
-                    >
-                        {primerMayuscula(pokemon.name)}
-                    </Typography>
-                    
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                        <Typography
+                            variant="h4"
+                            component="h1"
+                            sx={{
+                                fontSize: { xs: '1.3rem', md: '1.6rem' },
+                                fontWeight: 700,
+                                color: '#333',
+                                mb: 0.5
+                            }}
+                        >
+                            {primerMayuscula(pokemon.name)}
+                        </Typography>
+                        <IconButton
+                            size="small"
+                            onClick={() => toggleFavorite(pokemon)}
+                            aria-label={isFavorite(pokemon.id) ? 'Quitar de favoritos' : 'Añadir a favoritos'}
+                            sx={{ mb: 0.5 }}
+                        >
+                            {isFavorite(pokemon.id)
+                                ? <FavoriteIcon sx={{ color: '#cc0000' }} />
+                                : <FavoriteBorderIcon sx={{ color: '#999' }} />}
+                        </IconButton>
+                    </Box>
+
                     {/* Tipos del Pokemon */}
                     <Box 
                         sx={{
@@ -209,7 +327,65 @@ export const PokemonPage = ({ idPokemon, onClose }) => {
                             />
                         ))}
                     </Box>
-                    
+
+                    {/* Sonido y sprite shiny */}
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 1 }}>
+                        {pokemon.cries?.latest && (
+                            <IconButton
+                                size="small"
+                                aria-label={`Reproducir sonido de ${primerMayuscula(pokemon.name)}`}
+                                onClick={() => { new Audio(pokemon.cries.latest).play().catch(() => {}); }}
+                                sx={{
+                                    bgcolor: `var(--color-${mainType})`,
+                                    color: '#fff',
+                                    width: 24,
+                                    height: 24,
+                                    '&:hover': { opacity: 0.85, bgcolor: `var(--color-${mainType})` }
+                                }}
+                            >
+                                <VolumeUpIcon sx={{ fontSize: '0.9rem' }} />
+                            </IconButton>
+                        )}
+                        <Tooltip title={hasShiny ? (showShiny ? 'Ver sprite normal' : 'Ver sprite shiny') : 'Sin sprite shiny disponible'}>
+                            <span>
+                                <IconButton
+                                    size="small"
+                                    disabled={!hasShiny}
+                                    aria-label="Alternar sprite shiny"
+                                    onClick={() => setShowShiny(s => !s)}
+                                    sx={{ width: 24, height: 24 }}
+                                >
+                                    <AutoAwesomeIcon sx={{ fontSize: '0.9rem', color: showShiny ? 'var(--color-warning)' : '#999' }} />
+                                </IconButton>
+                            </span>
+                        </Tooltip>
+                    </Box>
+
+                    {/* Formas alternativas / regionales */}
+                    {speciesData?.varieties?.length > 1 && (
+                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mb: 1 }}>
+                            {speciesData.varieties.map(variety => (
+                                <Chip
+                                    key={variety.pokemon.name}
+                                    label={primerMayuscula(variety.pokemon.name)}
+                                    size="small"
+                                    clickable
+                                    onClick={() => handleSelectPokemon(variety.pokemon.name)}
+                                    variant={variety.pokemon.name === pokemon.name ? 'filled' : 'outlined'}
+                                    sx={{
+                                        fontSize: '0.65rem',
+                                        height: 20,
+                                        borderColor: `var(--color-${mainType})`,
+                                        ...(variety.pokemon.name === pokemon.name && {
+                                            bgcolor: `var(--color-${mainType})`,
+                                            color: '#fff'
+                                        })
+                                    }}
+                                />
+                            ))}
+                        </Box>
+                    )}
+
                     {/* Sección de info - con estilo unificado */}
                     <Box sx={{ 
                         display: 'flex', 
@@ -228,8 +404,9 @@ export const PokemonPage = ({ idPokemon, onClose }) => {
                                 boxShadow: `0 2px 8px rgba(var(--color-${mainType}-rgb), 0.1)`
                             }}
                         >
-                            <Typography 
+                            <Typography
                                 variant="subtitle2"
+                                component="h3"
                                 sx={{
                                     fontSize: { xs: '0.75rem', md: '0.95rem' },
                                     fontWeight: 700,
@@ -317,8 +494,9 @@ export const PokemonPage = ({ idPokemon, onClose }) => {
                                 boxShadow: `0 2px 8px rgba(var(--color-${mainType}-rgb), 0.1)`
                             }}
                         >
-                            <Typography 
+                            <Typography
                                 variant="subtitle2"
+                                component="h3"
                                 sx={{
                                     fontSize: { xs: '0.75rem', md: '0.95rem' },
                                     fontWeight: 700,
@@ -354,16 +532,49 @@ export const PokemonPage = ({ idPokemon, onClose }) => {
                                 ))}
                             </Box>
                         </Paper>
+
+                        {/* Sección 3: Descripción Pokédex */}
+                        {flavorText && (
+                            <Paper
+                                elevation={0}
+                                sx={{
+                                    p: 1,
+                                    borderRadius: 2,
+                                    background: `linear-gradient(135deg, rgba(255,255,255,0.9), rgba(var(--color-${mainType}-rgb), 0.1))`,
+                                    backdropFilter: 'blur(5px)',
+                                    border: `1px solid rgba(var(--color-${mainType}-rgb), 0.2)`,
+                                    boxShadow: `0 2px 8px rgba(var(--color-${mainType}-rgb), 0.1)`
+                                }}
+                            >
+                                <Typography
+                                    variant="subtitle2"
+                                    component="h3"
+                                    sx={{
+                                        fontSize: { xs: '0.75rem', md: '0.95rem' },
+                                        fontWeight: 700,
+                                        mb: 0,
+                                        color: '#333',
+                                        borderBottom: `1px solid rgba(var(--color-${mainType}-rgb), 0.2)`,
+                                        pb: 0.5
+                                    }}
+                                >
+                                    Descripción
+                                </Typography>
+                                <Typography sx={{ fontSize: { xs: '0.7rem', md: '0.8rem' }, color: '#555', pt: 0.5 }}>
+                                    {flavorText}
+                                </Typography>
+                            </Paper>
+                        )}
                     </Box>
                 </Grid>
             </Grid>
 
             {/* Panel de estadísticas - ahora más arriba en el diseño */}
-            <Box 
+            <Box
                 sx={{
                     flex: 1,
                     backgroundColor: '#fff',
-                    borderRadius: '15px 15px 0 0',
+                    borderRadius: isFullPage ? 0 : '15px 15px 0 0',
                     position: 'relative',
                     zIndex: 2,
                     mt: { xs: 1, md: 1 },
@@ -372,7 +583,8 @@ export const PokemonPage = ({ idPokemon, onClose }) => {
                     pb: { xs: 1, md: 1.5 },
                     display: 'flex',
                     flexDirection: 'column',
-                    overflow: 'hidden'
+                    overflow: 'hidden',
+                    ...contentWidthSx,
                 }}
             >
                 {/* Título de estadísticas */}
@@ -405,95 +617,66 @@ export const PokemonPage = ({ idPokemon, onClose }) => {
                 {/* Lista de estadísticas */}
                 <Box sx={{ overflow: 'auto', flex: 1, mt: 1 }}>
                     {pokemon.stats.map((stat, index) => (
-                        <Box 
+                        <StatBar
                             key={index}
-                            sx={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                mb: 1,
-                                px: { xs: 0, md: 1 }
-                            }}
-                        >
-                            {/* Icono y nombre */}
-                            <Box 
-                                sx={{ 
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    width: { xs: '35%', md: '30%' },
-                                    mr: 1
-                                }}
+                            icon={statIcons[stat.stat.name]}
+                            label={statNames[stat.stat.name] || primerMayuscula(stat.stat.name)}
+                            value={stat.base_stat}
+                            mainType={mainType}
+                        />
+                    ))}
+
+                    {/* Debilidades y resistencias */}
+                    {weaknesses && Object.values(weaknesses).some(list => list.length > 0) && (
+                        <Box sx={{
+                            mt: 1,
+                            pt: 1,
+                            borderTop: `1px dashed rgba(var(--color-${mainType}-rgb), 0.3)`,
+                        }}>
+                            <Typography
+                                variant="subtitle2"
+                                component="h3"
+                                sx={{ textAlign: 'center', fontSize: { xs: '0.8rem', md: '0.9rem' }, fontWeight: 700, mb: 0.2, color: '#444' }}
                             >
-                                <Box sx={{ 
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    minWidth: 20,
-                                    height: 20,
-                                    borderRadius: '50%',
-                                    backgroundColor: `rgba(var(--color-${mainType}-rgb), 0.1)`,
-                                    mr: 0.7
-                                }}>
-                                    {statIcons[stat.stat.name]}
-                                </Box>
-                                <Typography 
-                                    sx={{
-                                        fontWeight: 600,
-                                        fontSize: { xs: '0.65rem', md: '0.95rem' },
-                                        color: '#555',
-                                        whiteSpace: 'nowrap',
-                                        overflow: 'hidden',
-                                        textOverflow: 'ellipsis'
-                                    }}
-                                >
-                                    {statNames[stat.stat.name] || primerMayuscula(stat.stat.name)}
-                                </Typography>
-                            </Box>
-                            
-                            {/* Valor numérico */}
-                            <Typography 
-                                sx={{
-                                    width: '1%',
-                                    fontWeight: 700,
-                                    fontSize: { xs: '0.7rem', md: '0.9rem' },
-                                    textAlign: 'right',
-                                    mr: 3
-                                }}
-                            >
-                                {stat.base_stat}
+                                Debilidades y resistencias
                             </Typography>
-                            
-                            {/* Barra de progreso */}
-                            <Box 
-                                sx={{
-                                    flexGrow: 1,
-                                    height: 15,
-                                    bgcolor: 'rgba(0,0,0,0.05)',
-                                    borderRadius: 10,
-                                    overflow: 'hidden',
-                                    position: 'relative'
-                                }}
-                            >
-                                <Box
-                                    sx={{
-                                        height: '100%',
-                                        width: `${Math.min(stat.base_stat, 100)}%`,
-                                        bgcolor: `var(--color-${mainType})`,
-                                        borderRadius: 10,
-                                        position: 'absolute',
-                                        transition: 'width 1s ease-in-out',
-                                        backgroundImage: 'linear-gradient(90deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.5) 50%, rgba(255,255,255,0.2) 100%)',
-                                        backgroundSize: '200% 100%',
-                                        animation: 'shimmer 1.5s infinite',
-                                        '@keyframes shimmer': {
-                                            '0%': { backgroundPosition: '200% 0' },
-                                            '100%': { backgroundPosition: '-200% 0' }
-                                        }
-                                    }}
-                                />
+                            <Typography sx={{ textAlign: 'center', fontSize: '0.65rem', color: '#888', mb: 1 }}>
+                                Cuánto daño recibe este Pokémon al ser atacado por cada tipo
+                            </Typography>
+                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                                {[
+                                    { key: 'x4', label: 'Muy débil contra' },
+                                    { key: 'x2', label: 'Débil contra' },
+                                    { key: 'x0_5', label: 'Resiste' },
+                                    { key: 'x0_25', label: 'Resiste mucho' },
+                                    { key: 'x0', label: 'Inmune a' },
+                                ].filter(({ key }) => weaknesses[key].length > 0).map(({ key, label }) => (
+                                    <Box key={key} sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+                                        <Typography sx={{ fontSize: '0.7rem', fontWeight: 700, color: '#666', minWidth: 80 }}>
+                                            {label}
+                                        </Typography>
+                                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                                            {weaknesses[key].map(typeName => (
+                                                <Chip
+                                                    key={typeName}
+                                                    label={primerMayuscula(typeName)}
+                                                    size="small"
+                                                    sx={{
+                                                        backgroundColor: `var(--color-${typeName})`,
+                                                        color: '#fff',
+                                                        fontWeight: 600,
+                                                        fontSize: '0.65rem',
+                                                        height: 20
+                                                    }}
+                                                />
+                                            ))}
+                                        </Box>
+                                    </Box>
+                                ))}
                             </Box>
                         </Box>
-                    ))}
-                    
+                    )}
+
                     {/* Sección de árbol de evoluciones */}
                     <Box sx={{ 
                         mt: 1, 
@@ -501,10 +684,11 @@ export const PokemonPage = ({ idPokemon, onClose }) => {
                         borderTop: `1px dashed rgba(var(--color-${mainType}-rgb), 0.3)`,
                         position: 'relative'
                     }}>
-                        <Typography 
-                            variant="subtitle2" 
-                            sx={{ 
-                                textAlign: 'center', 
+                        <Typography
+                            variant="subtitle2"
+                            component="h3"
+                            sx={{
+                                textAlign: 'center',
                                 fontSize: { xs: '0.8rem', md: '0.9rem' },
                                 fontWeight: 700,
                                 mb: 1,
@@ -536,5 +720,6 @@ export const PokemonPage = ({ idPokemon, onClose }) => {
                 </Box>
             </Box>
         </Box>
+        </>
     );
 };
